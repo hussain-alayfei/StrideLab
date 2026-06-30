@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-forest-50: #f8fafc;
+  --color-forest-100: #d1fae5;
+  --color-forest-200: #a7f3d0;
+  --color-forest-300: #6ee7b7;
+  --color-forest-400: #34d399;
+  --color-forest-500: #10b981;
+  --color-forest-600: #059669;
+  --color-forest-700: #047857; 
+  --color-forest-800: #065f46; 
+  --color-forest-900: #064e3b;
+  --color-forest-950: #0a261c;
+}
+
+body {
+  @apply bg-stone-50 text-stone-800 font-sans antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-stone-300 rounded-sm;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-400;
+}

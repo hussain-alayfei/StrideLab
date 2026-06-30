@@ -1,0 +1,6 @@
+{
+  "name": "StrideLab",
+  "description": "A professional running training platform where AI assists coaches in building safe, personalized plans for athletes, integrated with local running communities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
