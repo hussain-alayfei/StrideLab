@@ -34,6 +34,7 @@ interface AthleteViewProps {
   activeSubTab: string;
   setActiveSubTab: (tab: string) => void;
   onResetData: () => void;
+  onUnsubscribeCoach?: () => void;
 }
 
 export default function AthleteView({
@@ -47,7 +48,8 @@ export default function AthleteView({
   setVideoAnalysis,
   activeSubTab,
   setActiveSubTab,
-  onResetData
+  onResetData,
+  onUnsubscribeCoach
 }: AthleteViewProps) {
   
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
@@ -56,6 +58,7 @@ export default function AthleteView({
   const [workoutProgress, setWorkoutProgress] = useState(0);
   const [workoutTimerActive, setWorkoutTimerActive] = useState(false);
   const [simulatedTime, setSimulatedTime] = useState('00:00');
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Dynamic Dashboard Insight State
   const [dashboardInsight, setDashboardInsight] = useState<string>('');
@@ -123,11 +126,11 @@ export default function AthleteView({
           // Safe fallback
           setVideoAnalysis({
             cadence: 174,
-            strideLength: "١.١٢ م",
-            bodyLean: "٥.٨ درجات للأمام",
+            strideLength: "1.12 م",
+            bodyLean: "5.8 درجات للأمام",
             footStrike: "منتصف القدم (Midfoot)",
             score: 92,
-            feedback: "حدث خطأ أثناء الاتصال بالخادم، ولكن بناءً على عينة الميكانيكية التلقائية: طريقة جري ممتازة ومتوازنة هندسياً! زاوية ميلان الجسم للأمام مثالية بـ ٥.٨ درجات، مما يقلل من الصدمات على الركبة. يُنصح بزيادة وتيرة إيقاع الخطوات (Cadence) لتصل إلى ١٨٠ خطوة/دقيقة."
+            feedback: "حدث خطأ أثناء الاتصال بالخادم، ولكن بناءً على عينة الميكانيكية التلقائية: طريقة جري ممتازة ومتوازنة هندسياً! زاوية ميلان الجسم للأمام مثالية بـ 5.8 درجات، مما يقلل من الصدمات على الركبة. يُنصح بزيادة وتيرة إيقاع الخطوات (Cadence) لتصل إلى 180 خطوة/دقيقة."
           });
         } finally {
           setIsAnalyzing(false);
@@ -319,34 +322,71 @@ export default function AthleteView({
               <div className="space-y-6">
                 
                 {/* Coach status */}
-                <div className="bg-white border-r-4 border-stone-200 shadow-sm p-6 flex items-center justify-between">
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 shrink-0">
-                      <SketchAvatar name={selectedCoach?.name || 'المدرب أحمد'} avatarUrl={selectedCoach?.avatar} className="w-16 h-16" />
+                <div className="bg-white border-r-4 border-stone-300 shadow-sm p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                      <div className="w-16 h-16 shrink-0">
+                        <SketchAvatar name={selectedCoach?.name || 'المدرب أحمد'} avatarUrl={selectedCoach?.avatar} className="w-16 h-16" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-stone-950 text-lg font-display">{selectedCoach?.name || 'المدرب أحمد'}</h3>
+                        <p className="text-[10px] text-stone-500 uppercase tracking-widest flex items-center gap-1 mt-1 font-bold">
+                          {hasApprovedPlan ? (
+                            <>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                              <span className="text-emerald-800">الخطة التدريبية معتمدة</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                              <span className="text-amber-700">بانتظار اعتماد التعديلات من المدرب</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-stone-950 text-lg">{selectedCoach?.name || 'المدرب أحمد'}</h3>
-                      <p className="text-[10px] text-stone-500 uppercase tracking-widest flex items-center gap-1 mt-1 font-bold">
-                        {hasApprovedPlan ? (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                            <span className="text-emerald-800">الخطة التدريبية معتمدة</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span className="text-amber-700">بانتظار اعتماد التعديلات من المدرب</span>
-                          </>
-                        )}
-                      </p>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => setActiveSubTab('chat')}
+                        className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 font-bold tracking-wide px-4 py-2.5 rounded-sm transition-all"
+                      >
+                        مراسلة
+                      </button>
+                      <button 
+                        onClick={() => setShowCancelConfirm(true)}
+                        className="text-xs bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 font-bold tracking-wide px-4 py-2.5 rounded-sm transition-all"
+                      >
+                        إلغاء الاشتراك
+                      </button>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setActiveSubTab('chat')}
-                    className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 font-bold tracking-wide px-4 py-2.5 rounded-sm transition-all"
-                  >
-                    مراسلة
-                  </button>
+
+                  {showCancelConfirm && (
+                    <div className="bg-red-50/70 border border-red-100 p-4 rounded-sm space-y-3 mt-4 text-right">
+                      <p className="text-xs text-red-800 font-bold">تنبيه إلغاء التعاقد والاشتراك:</p>
+                      <p className="text-xs text-stone-600 leading-relaxed">
+                        هل أنت متأكد من رغبتك في إلغاء اشتراكك وتجميد خطتك التدريبية الحالية مع المدرب {selectedCoach?.name || 'أحمد'}؟ سيتعين عليك اختيار مدرب بديل للبدء بخطة جديدة تماماً.
+                      </p>
+                      <div className="flex justify-end gap-2.5 pt-1">
+                        <button
+                          onClick={() => {
+                            setShowCancelConfirm(false);
+                            if (onUnsubscribeCoach) onUnsubscribeCoach();
+                          }}
+                          className="text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-sm transition-colors shadow-sm"
+                        >
+                          نعم، إلغاء الاشتراك وتأكيد الإلغاء
+                        </button>
+                        <button
+                          onClick={() => setShowCancelConfirm(false)}
+                          className="text-[10px] bg-white border border-stone-200 hover:bg-stone-50 text-stone-700 font-bold px-3 py-1.5 rounded-sm transition-colors"
+                        >
+                          تراجع
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Smart wearable connection */}
@@ -660,7 +700,7 @@ export default function AthleteView({
                     </div>
                     <div>
                       <p className="text-sm font-bold text-stone-800">اسحب فيديو الركض هنا أو تصفّح جهازك</p>
-                      <p className="text-xs text-stone-400 mt-1">يفضّل تصوير جانبي بطيء لمدة لا تقل عن ١٠ ثوانٍ</p>
+                      <p className="text-xs text-stone-400 mt-1">يفضّل تصوير جانبي بطيء لمدة لا تقل عن 10 ثوانٍ</p>
                     </div>
                     <button className="px-5 py-2.5 bg-stone-100 border border-stone-200 text-xs font-bold uppercase rounded-sm text-stone-700">
                       اختر ملفاً
@@ -865,9 +905,9 @@ export default function AthleteView({
                     <TrendingUp className="w-4 h-4 text-emerald-700" /> الأرقام الشخصية المستهدفة (Personal Records)
                   </h4>
                   <ul className="space-y-2 text-xs font-medium font-mono text-stone-600">
-                    <li className="flex justify-between"><span>مسافة ٥ كم:</span> <span className="font-bold text-stone-900">٢١:١٥ دقيقة</span></li>
-                    <li className="flex justify-between"><span>مسافة ١٠ كم (المستهدف حالياً):</span> <span className="font-bold text-emerald-800">٤٥:٠٠ دقيقة</span></li>
-                    <li className="flex justify-between"><span>نصف ماراثون ٢١ كم:</span> <span className="font-bold text-stone-900">١:٤٢:٣٠ ساعة</span></li>
+                    <li className="flex justify-between"><span>مسافة 5 كم:</span> <span className="font-bold text-stone-900">21:15 دقيقة</span></li>
+                    <li className="flex justify-between"><span>مسافة 10 كم (المستهدف حالياً):</span> <span className="font-bold text-emerald-800">45:00 دقيقة</span></li>
+                    <li className="flex justify-between"><span>نصف ماراثون 21 كم:</span> <span className="font-bold text-stone-900">1:42:30 ساعة</span></li>
                   </ul>
                 </div>
 

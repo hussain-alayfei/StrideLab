@@ -19,8 +19,8 @@ export default function CommunitiesView({
   const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [feedPosts, setFeedPosts] = useState<Array<{ id: string; user: string; text: string; time: string; distance: string }>>([
-    { id: 'p1', user: 'أحمد ف.', text: 'تمارين فترات السرعة صباح اليوم في وادي حنيفة كانت ممتازة! طاقة القروب عالية جداً.', time: 'منذ ١٠ دقائق', distance: '٨ كم' },
-    { id: 'p2', user: 'مروان م.', text: 'هرولة ممتعة مع الرفاق على ممشى الكورنيش. إيقاع خطوة متزن ودرجات حرارة رائعة.', time: 'منذ ساعة', distance: '١٢ كم' },
+    { id: 'p1', user: 'أحمد ف.', text: 'تمارين فترات السرعة صباح اليوم في وادي حنيفة كانت ممتازة! طاقة القروب عالية جداً.', time: 'منذ 10 دقائق', distance: '8 كم' },
+    { id: 'p2', user: 'مروان م.', text: 'هرولة ممتعة مع الرفاق على ممشى الكورنيش. إيقاع خطوة متزن ودرجات حرارة رائعة.', time: 'منذ ساعة', distance: '12 كم' },
   ]);
   const [newPostText, setNewPostText] = useState('');
   const [newPostDistance, setNewPostDistance] = useState('5 كم');
@@ -75,36 +75,48 @@ export default function CommunitiesView({
               {communities.map((community) => (
                 <div 
                   key={community.id} 
-                  className="bg-white border border-stone-200 shadow-sm rounded-sm hover:shadow-md transition-shadow cursor-pointer group flex flex-col justify-between"
+                  className="bg-white border border-stone-200 shadow-sm rounded-sm hover:shadow-xl hover:border-emerald-900/15 transition-all duration-300 cursor-pointer group flex flex-col justify-between overflow-hidden"
                 >
                   <div 
                     onClick={() => setSelectedCommunityId(community.id)}
-                    className="h-48 relative overflow-hidden bg-stone-100 p-2 border-b border-stone-200"
+                    className="h-48 relative overflow-hidden bg-stone-100 border-b border-stone-150"
                   >
-                    <div className="w-full h-full relative overflow-hidden rounded-sm">
-                      <div className="absolute inset-0 bg-emerald-900/10 group-hover:bg-transparent transition-colors z-10" />
+                    <div className="w-full h-full relative overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                      <div className="absolute inset-0 bg-emerald-900/[0.04] group-hover:bg-transparent transition-colors z-10" />
                       <CommunitySketch name={community.name} className="w-full h-full" />
                     </div>
                   </div>
 
                   <div className="p-6 flex flex-col flex-1">
-                    <div onClick={() => setSelectedCommunityId(community.id)}>
-                      <h3 className="font-semibold text-lg text-stone-900 mb-4 group-hover:text-emerald-900 transition-colors">{community.name}</h3>
+                    <div onClick={() => setSelectedCommunityId(community.id)} className="space-y-4">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-bold text-lg text-stone-900 leading-snug group-hover:text-emerald-950 transition-colors font-display">
+                          {community.name}
+                        </h3>
+                        {community.joined && (
+                          <span className="text-[9px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-sm border border-emerald-200/50 shrink-0">
+                            عضو نشط ✓
+                          </span>
+                        )}
+                      </div>
                       
-                      <div className="space-y-3 mb-6">
+                      <div className="space-y-2.5 mb-6">
                         <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <MapPin className="w-4 h-4 text-emerald-800" /> {community.location}
+                          <MapPin className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
+                          <span>{community.location}</span>
                         </p>
                         <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <Users className="w-4 h-4 text-emerald-800" /> {community.members} عدّاء مشارك
+                          <Users className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
+                          <span>{community.members} عدّاء مشارك</span>
                         </p>
                         <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <Calendar className="w-4 h-4 text-emerald-800" /> <span className="truncate">{community.nextRun}</span>
+                          <Calendar className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
+                          <span className="truncate">{community.nextRun}</span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex gap-2 mt-auto">
+                    <div className="flex gap-2 mt-4 pt-2 border-t border-stone-100">
                       <button 
                         onClick={() => setSelectedCommunityId(community.id)}
                         className="flex-1 bg-stone-50 text-stone-800 border border-stone-200 text-xs font-bold py-2.5 rounded-sm hover:bg-stone-100 transition-colors"
@@ -115,11 +127,11 @@ export default function CommunitiesView({
                         onClick={() => handleToggleJoin(community)}
                         className={`px-4 py-2.5 text-xs font-bold uppercase rounded-sm transition-all ${
                           community.joined 
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' 
-                            : 'bg-emerald-950 text-white hover:bg-emerald-800 shadow-sm'
+                            ? 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/50' 
+                            : 'bg-emerald-950 text-white hover:bg-emerald-850 shadow-sm'
                         }`}
                       >
-                        {community.joined ? 'عضو ✓' : 'انضمام'}
+                        {community.joined ? 'مغادرة' : 'انضمام'}
                       </button>
                     </div>
                   </div>
@@ -173,18 +185,18 @@ export default function CommunitiesView({
                     <div className="space-y-3">
                       <div className="p-4 bg-stone-50 border border-stone-150 rounded-sm flex justify-between items-center">
                         <div>
-                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الجمعة، ٥:٠٠ صباحاً</span>
+                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الجمعة، 5:00 صباحاً</span>
                           <h4 className="font-semibold text-stone-900 text-xs">الجري الطويل الأسبوعي (Long Run) @ وادي حنيفة</h4>
                         </div>
-                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">١٥ كم</span>
+                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">15 كم</span>
                       </div>
 
                       <div className="p-4 bg-stone-50 border border-stone-150 rounded-sm flex justify-between items-center">
                         <div>
-                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الأحد، ٧:٠٠ مساءً</span>
+                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الأحد، 7:00 مساءً</span>
                           <h4 className="font-semibold text-stone-900 text-xs">ركض هرولة خفيفة (Easy Aerobic Pace) @ ممشى السفارات</h4>
                         </div>
-                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">٧ كم</span>
+                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">7 كم</span>
                       </div>
                     </div>
                   </div>
@@ -278,7 +290,7 @@ export default function CommunitiesView({
                   rows={3}
                   value={newPostText} 
                   onChange={(e) => setNewPostText(e.target.value)}
-                  placeholder="مثال: أكملت ركض الـ ١٠ كم اليوم بنبض متوسط متزن جداً!" 
+                  placeholder="مثال: أكملت ركض الـ 10 كم اليوم بنبض متوسط متزن جداً!" 
                   className="w-full bg-stone-50 border border-stone-200 rounded-sm px-4 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-800" 
                 />
               </div>

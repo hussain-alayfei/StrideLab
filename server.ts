@@ -32,7 +32,7 @@ function getAI(): GoogleGenAI {
   return aiClient;
 }
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.5-flash";
 
 // Helper safety validator for workouts (فحص السلامة - Guardrail)
 function validatePlanSafety(workouts: any[], athleteGoal: string, weeklyKm: number) {
@@ -84,9 +84,9 @@ app.post("/api/ai/initial-assessment", async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
       // Return a clean fallback if key is not set to keep app running gracefully
       return res.json({
-        estimatedTime: "٤٨:١٥ دقيقة",
+        estimatedTime: "48:15 دقيقة",
         confidence: "متوسط",
-        advice: "نوصي بالبدء بتمارين الهرولة الخفيفة ٣ مرات أسبوعياً مع الحفاظ على وتيرة مريحة تسمح بالكلام، وتجنب زيادة الحِمل بنسبة تزيد عن ١٠٪ أسبوعياً لضمان سلامة المفاصل."
+        advice: "نوصي بالبدء بتمارين الهرولة الخفيفة 3 مرات أسبوعياً مع الحفاظ على وتيرة مريحة تسمح بالكلام، وتجنب زيادة الحِمل بنسبة تزيد عن 10٪ أسبوعياً لضمان سلامة المفاصل."
       });
     }
 
@@ -110,7 +110,7 @@ app.post("/api/ai/initial-assessment", async (req, res) => {
           properties: {
             estimatedTime: { 
               type: Type.STRING, 
-              description: "الزمن المتوقع والوتيرة المقدرة للمسافة المستهدفة، مثل '٥٢:٣٠ دقيقة' أو '٤ ساعات و١٥ دقيقة'" 
+              description: "الزمن المتوقع والوتيرة المقدرة للمسافة المستهدفة، مثل '52:30 دقيقة' أو '4 ساعات و15 دقيقة'" 
             },
             confidence: { 
               type: Type.STRING, 
@@ -129,11 +129,11 @@ app.post("/api/ai/initial-assessment", async (req, res) => {
     const result = JSON.parse(response.text || "{}");
     res.json(result);
   } catch (error: any) {
-    console.error("Error in initial-assessment:", error);
+    console.warn("Warning in initial-assessment:", error?.message || error);
     res.json({
-      estimatedTime: "٤٨:١٥ دقيقة",
+      estimatedTime: "48:15 دقيقة",
       confidence: "متوسط",
-      advice: "نوصي بالبدء بتمارين الهرولة الخفيفة ٣ مرات أسبوعياً مع الحفاظ على وتيرة مريحة تسمح بالكلام، وتجنب زيادة الحِمل بنسبة تزيد عن ١٠٪ أسبوعياً لضمان سلامة المفاصل."
+      advice: "نوصي بالبدء بتمارين الهرولة الخفيفة 3 مرات أسبوعياً مع الحفاظ على وتيرة مريحة تسمح بالكلام، وتجنب زيادة الحِمل بنسبة تزيد عن 10٪ أسبوعياً لضمان سلامة المفاصل."
     });
   }
 });
@@ -145,7 +145,7 @@ app.post("/api/ai/dashboard-insight", async (req, res) => {
     
     if (!process.env.GEMINI_API_KEY) {
       return res.json({
-        insight: "مؤشراتك ممتازة اليوم. نبض الاستراحة ٥٨ ن/د مستقر، ومعدل إجهاد المفاصل متوازن تماماً مع المسافة المقطوعة هذا الأسبوع. واصل الالتزام بأيام التعافي المخصصة."
+        insight: "مؤشراتك ممتازة اليوم. نبض الاستراحة 58 ن/د مستقر، ومعدل إجهاد المفاصل متوازن تماماً مع المسافة المقطوعة هذا الأسبوع. واصل الالتزام بأيام التعافي المخصصة."
       });
     }
 
@@ -176,9 +176,9 @@ app.post("/api/ai/dashboard-insight", async (req, res) => {
     const result = JSON.parse(response.text || "{}");
     res.json(result);
   } catch (error: any) {
-    console.error("Error in dashboard-insight:", error);
+    console.warn("Warning in dashboard-insight:", error?.message || error);
     res.json({
-      insight: "مؤشراتك ممتازة اليوم. نبض الاستراحة ٥٨ ن/د مستقر، ومعدل إجهاد المفاصل متوازن تماماً مع المسافة المقطوعة هذا الأسبوع. واصل الالتزام بأيام التعافي المخصصة."
+      insight: "مؤشراتك ممتازة اليوم. نبض الاستراحة 58 ن/د مستقر، ومعدل إجهاد المفاصل متوازن تماماً مع المسافة المقطوعة هذا الأسبوع. واصل الالتزام بأيام التعافي المخصصة."
     });
   }
 });
@@ -191,11 +191,11 @@ app.post("/api/ai/analyze-running-form", async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
       return res.json({
         cadence: 172,
-        strideLength: "١.١٥ م",
-        bodyLean: "٤.٥ درجات للأمام",
+        strideLength: "1.15 م",
+        bodyLean: "4.5 درجات للأمام",
         footStrike: "منتصف القدم (Midfoot)",
         score: 88,
-        feedback: "هيئة جري ممتازة ومتزنة. ميلان جذعك مالي مثالي ومستقر، لكن حاول زيادة وتيرة الخطوات (Cadence) قليلاً لتصل إلى نطاق ١٧٥-١٨٠ خطوة في الدقيقة لتقليص وقت ملامسة الأرض وتقليل الصدمات على الركبة."
+        feedback: "هيئة جري ممتازة ومتزنة. ميلان جذعك مالي مثالي ومستقر، لكن حاول زيادة وتيرة الخطوات (Cadence) قليلاً لتصل إلى نطاق 175-180 خطوة في الدقيقة لتقليص وقت ملامسة الأرض وتقليل الصدمات على الركبة."
       });
     }
 
@@ -212,12 +212,12 @@ app.post("/api/ai/analyze-running-form", async (req, res) => {
       });
       contents.push({
         text: `قم بتحليل لقطة الركض هذه للرياضي واستخراج القياسات البيوميكانيكية الدقيقة التالية لهيئة وجسد العداء:
-١. وتيرة الخطوات (Cadence) بالدقيقة.
-٢. طول الخطوة التقريبي (Stride Length).
-٣. ميلان الجسم (Body Lean) بالدرجات.
-٤. طريقة هبوط القدم على الأرض (Foot Strike).
-٥. درجة الهيئة العامة من ١٠٠.
-٦. تعليق فني دقيق جداً ونصيحة عملية باللغة العربية لتحسين ميكانيكية حركته وتفادي المجهود الضائع.`
+1. وتيرة الخطوات (Cadence) بالدقيقة.
+2. طول الخطوة التقريبي (Stride Length).
+3. ميلان الجسم (Body Lean) بالدرجات.
+4. طريقة هبوط القدم على الأرض (Foot Strike).
+5. درجة الهيئة العامة من 100.
+6. تعليق فني دقيق جداً ونصيحة عملية باللغة العربية لتحسين ميكانيكية حركته وتفادي المجهود الضائع.`
       });
     } else {
       // Simulated video analysis requested or no file, generate a realistic biomechanical variation
@@ -235,11 +235,11 @@ app.post("/api/ai/analyze-running-form", async (req, res) => {
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            cadence: { type: Type.INTEGER, description: "عدد الخطوات في الدقيقة، عادة بين ١٥٥ و١٩٠" },
-            strideLength: { type: Type.STRING, description: "طول الخطوة مع الوحدة، مثل '١.١٨ م'" },
-            bodyLean: { type: Type.STRING, description: "ميلان الجسم للأمام بالدرجات، مثل '٥ درجات للأمام'" },
+            cadence: { type: Type.INTEGER, description: "عدد الخطوات في الدقيقة، عادة بين 155 و190" },
+            strideLength: { type: Type.STRING, description: "طول الخطوة مع الوحدة، مثل '1.18 م'" },
+            bodyLean: { type: Type.STRING, description: "ميلان الجسم للأمام بالدرجات، مثل '5 درجات للأمام'" },
             footStrike: { type: Type.STRING, description: "منطقة الهبوط، مثل 'منتصف القدم (Midfoot)' أو 'عقب القدم (Heel Strike)'" },
-            score: { type: Type.INTEGER, description: "نقاط تقييم الهيئة الإجمالية من ١٠٠" },
+            score: { type: Type.INTEGER, description: "نقاط تقييم الهيئة الإجمالية من 100" },
             feedback: { type: Type.STRING, description: "تعليق فني مفصل ومبني على القياسات لتحسين كفاءة الطاقة وتفادي آلام الكاحل أو أسفل الظهر." }
           },
           required: ["cadence", "strideLength", "bodyLean", "footStrike", "score", "feedback"]
@@ -250,14 +250,14 @@ app.post("/api/ai/analyze-running-form", async (req, res) => {
     const result = JSON.parse(response.text || "{}");
     res.json(result);
   } catch (error: any) {
-    console.error("Error in analyze-running-form:", error);
+    console.warn("Warning in analyze-running-form:", error?.message || error);
     res.json({
       cadence: 172,
-      strideLength: "١.١٥ م",
-      bodyLean: "٤.٥ درجات للأمام",
+      strideLength: "1.15 م",
+      bodyLean: "4.5 درجات للأمام",
       footStrike: "منتصف القدم (Midfoot)",
       score: 88,
-      feedback: "هيئة جري ممتازة ومتزنة. ميلان جذعك مالي مثالي ومستقر، لكن حاول زيادة وتيرة الخطوات (Cadence) قليلاً لتصل إلى نطاق ١٧٥-١٨٠ خطوة في الدقيقة لتقليص وقت ملامسة الأرض وتقليل الصدمات على الركبة."
+      feedback: "هيئة جري ممتازة ومتزنة. ميلان جذعك مالي مثالي ومستقر، لكن حاول زيادة وتيرة الخطوات (Cadence) قليلاً لتصل إلى نطاق 175-180 خطوة في الدقيقة لتقليص وقت ملامسة الأرض وتقليل الصدمات على الركبة."
     });
   }
 });
@@ -269,7 +269,7 @@ app.post("/api/ai/risk-recommendation", async (req, res) => {
 
     if (!process.env.GEMINI_API_KEY) {
       return res.json({
-        recommendation: "تخفيض مسافة الجري الطويل بمقدار ٤ كم هذا الأسبوع، مع التركيز على تمارين الإطالة والاستحمام البارد لاستعادة مرونة العضلات."
+        recommendation: "تخفيض مسافة الجري الطويل بمقدار 4 كم هذا الأسبوع، مع التركيز على تمارين الإطالة والاستحمام البارد لاستعادة مرونة العضلات."
       });
     }
 
@@ -298,9 +298,9 @@ app.post("/api/ai/risk-recommendation", async (req, res) => {
     const result = JSON.parse(response.text || "{}");
     res.json(result);
   } catch (error: any) {
-    console.error("Error in risk-recommendation:", error);
+    console.warn("Warning in risk-recommendation:", error?.message || error);
     res.json({
-      recommendation: "تخفيض مسافة الجري الطويل بمقدار ٤ كم هذا الأسبوع، مع التركيز على تمارين الإطالة والاستحمام البارد لاستعادة مرونة العضلات."
+      recommendation: "تخفيض مسافة الجري الطويل بمقدار 4 كم هذا الأسبوع، مع التركيز على تمارين الإطالة والاستحمام البارد لاستعادة مرونة العضلات."
     });
   }
 });
@@ -313,10 +313,10 @@ app.post("/api/ai/generate-plan", async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
       // Fallback structured plans
       const defaultWorkouts = [
-        { id: "w1", title: "هرولة تعافي وبناء هوائي", distance: "٥ كم", duration: "٣٥ دقيقة", type: "Recovery", completed: false, date: "الإثنين", description: "جري خفيف ومريح جداً بنبضات قلب منخفضة في المنطقة الثانية." },
-        { id: "w2", title: "تمرين فترات لرفع السعة الهوائية", distance: "٦ كم", duration: "٤٠ دقيقة", type: "Intervals", completed: false, date: "الأربعاء", description: "تسخين ١ كم + فترات تكرار ٤٠٠م بسرعات عالية مع راحة دقيقة بينها + تبريد ١ كم." },
-        { id: "w3", title: "هرولة متوسطة المسافة وبناء تحمل", distance: "٧ كم", duration: "٤٥ دقيقة", type: "Easy", completed: false, date: "الخميس", description: "ركض مريح ومستقر لبناء المتانة الهوائية وتقوية الأوتار." },
-        { id: "w4", title: "تمرين ركض طويل متدرج", distance: "١٢ كم", duration: "٧٥ دقيقة", type: "Long Run", completed: false, date: "السبت", description: "تمرين الركض الطويل الأساسي للأسبوع، ركض هادئ يركز على زيادة القدرة الاستيعابية للجهد العالي." }
+        { id: "w1", title: "هرولة تعافي وبناء هوائي", distance: "5 كم", duration: "35 دقيقة", type: "Recovery", completed: false, date: "الإثنين", description: "جري خفيف ومريح جداً بنبضات قلب منخفضة في المنطقة الثانية." },
+        { id: "w2", title: "تمرين فترات لرفع السعة الهوائية", distance: "6 كم", duration: "40 دقيقة", type: "Intervals", completed: false, date: "الأربعاء", description: "تسخين 1 كم + فترات تكرار 400م بسرعات عالية مع راحة دقيقة بينها + تبريد 1 كم." },
+        { id: "w3", title: "هرولة متوسطة المسافة وبناء تحمل", distance: "7 كم", duration: "45 دقيقة", type: "Easy", completed: false, date: "الخميس", description: "ركض مريح ومستقر لبناء المتانة الهوائية وتقوية الأوتار." },
+        { id: "w4", title: "تمرين ركض طويل متدرج", distance: "12 كم", duration: "75 دقيقة", type: "Long Run", completed: false, date: "السبت", description: "تمرين الركض الطويل الأساسي للأسبوع، ركض هادئ يركز على زيادة القدرة الاستيعابية للجهد العالي." }
       ];
       const safety = validatePlanSafety(defaultWorkouts, athleteGoal, weeklyKm);
       return res.json({ workouts: defaultWorkouts, safety });
@@ -332,7 +332,7 @@ app.post("/api/ai/generate-plan", async (req, res) => {
 المدرب المشرف هو: ${coachName}
 أسلوب المدرب التدريبي المعتمد: ${coachStyle}
 
-صمم جدول تمارين أسبوعي من ٤ إلى ٥ تمارين جري متنوعة (Easy, Tempo, Intervals, Long Run, Recovery) يعكس بالتمام أسلوب المدرب الخاص، مع كتابة تفاصيل ممتازة لكل تمرين تشرح له الهدف منه وكيفية تنفيذه.
+صمم جدول تمارين أسبوعي من 4 إلى 5 تمارين جري متنوعة (Easy, Tempo, Intervals, Long Run, Recovery) يعكس بالتمام أسلوب المدرب الخاص، مع كتابة تفاصيل ممتازة لكل تمرين تشرح له الهدف منه وكيفية تنفيذه.
 وزّع التمارين على أيام الأسبوع (مثال: الإثنين، الأربعاء، الخميس، السبت).`;
 
     const response = await ai.models.generateContent({
@@ -351,8 +351,8 @@ app.post("/api/ai/generate-plan", async (req, res) => {
                 properties: {
                   id: { type: Type.STRING, description: "معرّف عشوائي فريد، مثل 'w-1', 'w-2'" },
                   title: { type: Type.STRING, description: "اسم التمرين باللغة العربية، مثل 'تمرين ريتم تكتيكي'" },
-                  distance: { type: Type.STRING, description: "المسافة بالكم مع الوحدة، مثل '٦ كم' أو '٨ كم'" },
-                  duration: { type: Type.STRING, description: "المدة الزمنية المقدرة للتمرين، مثل '٤٥ دقيقة'" },
+                  distance: { type: Type.STRING, description: "المسافة بالكم مع الوحدة، مثل '6 كم' أو '8 كم'" },
+                  duration: { type: Type.STRING, description: "المدة الزمنية المقدرة للتمرين، مثل '45 دقيقة'" },
                   type: { 
                     type: Type.STRING, 
                     description: "نوع التمرين حصرياً من القيم التالية: 'Easy', 'Tempo', 'Intervals', 'Long Run', 'Recovery'" 
@@ -380,12 +380,12 @@ app.post("/api/ai/generate-plan", async (req, res) => {
       safety: safety
     });
   } catch (error: any) {
-    console.error("Error in generate-plan:", error);
+    console.warn("Warning in generate-plan:", error?.message || error);
     const defaultWorkouts = [
-      { id: "w1", title: "هرولة تعافي وبناء هوائي", distance: "٥ كم", duration: "٣٥ دقيقة", type: "Recovery", completed: false, date: "الإثنين", description: "جري خفيف ومريح جداً بنبضات قلب منخفضة في المنطقة الثانية." },
-      { id: "w2", title: "تمرين فترات لرفع السعة الهوائية", distance: "٦ كم", duration: "٤٠ دقيقة", type: "Intervals", completed: false, date: "الأربعاء", description: "تسخين ١ كم + فترات تكرار ٤٠٠م بسرعات عالية مع راحة دقيقة بينها + تبريد ١ كم." },
-      { id: "w3", title: "هرولة متوسطة المسافة وبناء تحمل", distance: "٧ كم", duration: "٤٥ دقيقة", type: "Easy", completed: false, date: "الخميس", description: "ركض مريح ومستقر لبناء المتانة الهوائية وتقوية الأوتار." },
-      { id: "w4", title: "تمرين ركض طويل متدرج", distance: "١٢ كم", duration: "٧٥ دقيقة", type: "Long Run", completed: false, date: "السبت", description: "تمرين الركض الطويل الأساسي للأسبوع، ركض هادئ يركز على زيادة القدرة الاستيعابية للجهد العالي." }
+      { id: "w1", title: "هرولة تعافي وبناء هوائي", distance: "5 كم", duration: "35 دقيقة", type: "Recovery", completed: false, date: "الإثنين", description: "جري خفيف ومريح جداً بنبضات قلب منخفضة في المنطقة الثانية." },
+      { id: "w2", title: "تمرين فترات لرفع السعة الهوائية", distance: "6 كم", duration: "40 دقيقة", type: "Intervals", completed: false, date: "الأربعاء", description: "تسخين 1 كم + فترات تكرار 400م بسرعات عالية مع راحة دقيقة بينها + تبريد 1 كم." },
+      { id: "w3", title: "هرولة متوسطة المسافة وبناء تحمل", distance: "7 كم", duration: "45 دقيقة", type: "Easy", completed: false, date: "الخميس", description: "ركض مريح ومستقر لبناء المتانة الهوائية وتقوية الأوتار." },
+      { id: "w4", title: "تمرين ركض طويل متدرج", distance: "12 كم", duration: "75 دقيقة", type: "Long Run", completed: false, date: "السبت", description: "تمرين الركض الطويل الأساسي للأسبوع، ركض هادئ يركز على زيادة القدرة الاستيعابية للجهد العالي." }
     ];
     res.json({
       workouts: defaultWorkouts,
@@ -414,7 +414,7 @@ app.post("/api/ai/extend-plan", async (req, res) => {
           distance: `${nextDist} كم`,
           duration: `${nextMin} دقيقة`,
           completed: false,
-          description: `[خطة الشهر الثاني] ${w.description} (تمت زيادة الحِمل بنسبة آمنة تبلغ ١٠٪ لتطوير الاستيعاب الهوائي).`
+          description: `[خطة الشهر الثاني] ${w.description} (تمت زيادة الحِمل بنسبة آمنة تبلغ 10٪ لتطوير الاستيعاب الهوائي).`
         };
       });
       const safety = validatePlanSafety(nextMonthWorkouts, athleteGoal, weeklyKm * 1.1);
@@ -428,7 +428,7 @@ ${JSON.stringify(currentWorkouts)}
 
 المطلوب: اقتراح وتجهيز جدول تمارين الشهر رقم ${currentMonth + 1} (تمديد الخطة).
 شروط وقوانين السلامة الصارمة للزيادة التدريجية (Progressive Overload):
-- يجب ألا تتعدى الزيادة في مسافات الجري الأسبوعي والتمارين الفردية حاجز الـ ١٠٪ مقارنة بالشهر السابق لحماية أوتار الركبة والكاحل من الإجهاد التراكمي وتجنب الإصابات.
+- يجب ألا تتعدى الزيادة في مسافات الجري الأسبوعي والتمارين الفردية حاجز الـ 10٪ مقارنة بالشهر السابق لحماية أوتار الركبة والكاحل من الإجهاد التراكمي وتجنب الإصابات.
 - الحفاظ على نفس التنوع والتوزيع المناسب لأيام الاستراحة.
 هدف العداء الإجمالي: ${athleteGoal}
 
@@ -475,7 +475,7 @@ ${JSON.stringify(currentWorkouts)}
       month: currentMonth + 1
     });
   } catch (error: any) {
-    console.error("Error in extend-plan:", error);
+    console.warn("Warning in extend-plan:", error?.message || error);
     const { currentWorkouts, athleteGoal, weeklyKm, currentMonth = 1 } = req.body;
     const nextMonthWorkouts = (currentWorkouts || []).map((w: any) => {
       const currentDist = parseFloat(w.distance.replace(/[^\d.]/g, '')) || 5;
@@ -489,7 +489,7 @@ ${JSON.stringify(currentWorkouts)}
         distance: `${nextDist} كم`,
         duration: `${nextMin} دقيقة`,
         completed: false,
-        description: `[خطة الشهر الثاني] ${w.description} (تمت زيادة الحِمل بنسبة آمنة تبلغ ١٠٪ لتطوير الاستيعاب الهوائي).`
+        description: `[خطة الشهر الثاني] ${w.description} (تمت زيادة الحِمل بنسبة آمنة تبلغ 10٪ لتطوير الاستيعاب الهوائي).`
       };
     });
     res.json({
@@ -516,7 +516,7 @@ app.post("/api/ai/draft-coach-reply", async (req, res) => {
 هذه هي سجل الرسائل المتبادلة الأخيرة بينكما:
 ${JSON.stringify(messages || [])}
 
-اكتب مسودة رد احترافية مخصصة جداً ولطيفة باللغة العربية الفصحى (لا تتجاوز ٣ أسطر) يوجهها المدرب للاعب بناءً على استفساره أو كلامه الأخير. يجب أن تبدو الرسالة وكأنها مكتوبة يدوياً من مدرب جري حريص وداعم جداً وليس رداً عاماً.`;
+اكتب مسودة رد احترافية مخصصة جداً ولطيفة باللغة العربية الفصحى (لا تتجاوز 3 أسطر) يوجهها المدرب للاعب بناءً على استفساره أو كلامه الأخير. يجب أن تبدو الرسالة وكأنها مكتوبة يدوياً من مدرب جري حريص وداعم جداً وليس رداً عاماً.`;
 
     const response = await ai.models.generateContent({
       model: MODEL,
@@ -537,7 +537,7 @@ ${JSON.stringify(messages || [])}
     const result = JSON.parse(response.text || "{}");
     res.json(result);
   } catch (error: any) {
-    console.error("Error in draft-coach-reply:", error);
+    console.warn("Warning in draft-coach-reply:", error?.message || error);
     res.json({
       reply: "أهلاً بك يا بطل! مؤشرات الاستشفاء الخاصة بك اليوم ممتازة وتبشر بالخير. ركز في تمرين الغد على الحفاظ على إيقاع هادئ في أول كيلومترين لتهيئة الساقين، ثم تدرج بزيادة الوتيرة كما هو مخطط له. واصل العمل الرائع!"
     });
