@@ -67,7 +67,7 @@ export default function CommunitiesView({
             className="space-y-8"
           >
             <div>
-              <h1 className="text-4xl font-light text-stone-950 tracking-tight mb-2 italic font-serif">المجتمعات ونوادي الجري</h1>
+              <h1 className="text-4xl font-bold text-stone-950 tracking-tight mb-2 font-display">المجتمعات ونوادي الجري</h1>
               <p className="text-stone-500 text-sm font-sans">ابحث وانضم إلى مجموعات الجري المحلية لتتدرب في بيئة جماعية محفزة وتشارك مساراتك اليومية.</p>
             </div>
 
@@ -266,7 +266,7 @@ export default function CommunitiesView({
             </button>
 
             <div>
-              <h3 className="text-xl font-light text-stone-900 font-serif">مشاركة تمرين ركض مع مجتمعك</h3>
+              <h3 className="text-xl font-bold text-stone-900 font-display">مشاركة تمرين ركض مع مجتمعك</h3>
               <p className="text-stone-400 text-xs mt-1">اكتب ملخص تجربتك والمسافة التي أكملتها اليوم لتشجيع أعضاء النادي.</p>
             </div>
 

@@ -39,6 +39,42 @@ export default function App() {
     hasWatch: 'نعم'
   });
 
+  // Onboarding AI Assessment states
+  const [aiAssessment, setAiAssessment] = useState<{ estimatedTime: string; confidence: string; advice: string } | null>(null);
+  const [isGeneratingAssessment, setIsGeneratingAssessment] = useState<boolean>(false);
+
+  const handleGenerateAssessment = async () => {
+    setOnboardingStep(3);
+    setIsGeneratingAssessment(true);
+    setAiAssessment(null);
+    try {
+      const response = await fetch('/api/ai/initial-assessment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age: onboardForm.age,
+          weight: onboardForm.weight,
+          height: onboardForm.height,
+          level: onboardForm.level,
+          targetDistance: onboardForm.targetDistance,
+          weeklyKm: onboardForm.weeklyKm
+        })
+      });
+      const data = await response.json();
+      setAiAssessment(data);
+    } catch (error) {
+      console.error("Error generating initial assessment:", error);
+      // Safe fallback
+      setAiAssessment({
+        estimatedTime: "~٤٥:٠٠ دقيقة",
+        confidence: "متوسط إلى مرتفع",
+        advice: "بناءً على وتيرة لياقتك الحالية، يُنصح بالالتزام بجري هوائي منخفض الشدة في البداية لبناء عتبة تحمل قوية وتفادي الإصابات الشائعة."
+      });
+    } finally {
+      setIsGeneratingAssessment(false);
+    }
+  };
+
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
   const [hasApprovedPlan, setHasApprovedPlan] = useState<boolean>(false);
   const [athleteActiveSubTab, setAthleteActiveSubTab] = useState<string>('dashboard');
@@ -198,25 +234,49 @@ export default function App() {
     }));
   };
 
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     const newMsg: ChatMessage = {
       id: Math.random().toString(),
       sender: 'athlete',
       text,
       time: 'الآن'
     };
-    setChatMessages(prev => [...prev, newMsg]);
+    const updatedMessages = [...chatMessages, newMsg];
+    setChatMessages(updatedMessages);
 
-    // Simulate coach response
-    setTimeout(() => {
-      const responseMsg: ChatMessage = {
-        id: Math.random().toString(),
-        sender: 'coach',
-        text: 'أحسنت يا بطل! رسالتك مستلمة وسأقوم بمتابعة قراءات أدائك التدريبي ومؤشرات التعافي من ساعة الجري مباشرة. واصل تدريبك وعزيمتك!',
-        time: 'منذ ثانية واحدة'
-      };
-      setChatMessages(prev => [...prev, responseMsg]);
-    }, 1200);
+    // Call dynamic backend coach reply API
+    try {
+      const res = await fetch("/api/ai/draft-coach-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({ sender: m.sender, text: m.text })),
+          athleteName: "فهد آل سعود",
+          athleteGoal: onboardForm.targetDistance ? `إنهاء ركض مسافة ${onboardForm.targetDistance}` : "ركض 10 كم في 45 دقيقة"
+        })
+      });
+      const data = await res.json();
+      if (data.reply) {
+        setChatMessages(prev => [...prev, {
+          id: Math.random().toString(),
+          sender: 'coach',
+          text: data.reply,
+          time: 'الآن'
+        }]);
+      } else {
+        throw new Error();
+      }
+    } catch (e) {
+      setTimeout(() => {
+        const responseMsg: ChatMessage = {
+          id: Math.random().toString(),
+          sender: 'coach',
+          text: 'أحسنت يا بطل! رسالتك مستلمة وسأقوم بمتابعة قراءات أدائك التدريبي ومؤشرات التعافي من ساعة الجري مباشرة. واصل تدريبك وعزيمتك!',
+          time: 'الآن'
+        };
+        setChatMessages(prev => [...prev, responseMsg]);
+      }, 1000);
+    }
   };
 
   const handleAddAthlete = (newAthlete: Omit<PlayerStatus, 'id' | 'workouts'>) => {
@@ -397,7 +457,7 @@ export default function App() {
                   <div className="w-16 h-16 bg-emerald-950 text-white rounded-sm flex items-center justify-center mx-auto shadow-md">
                     <div className="w-8 h-8 border-4 border-white rotate-45"></div>
                   </div>
-                  <h1 className="text-3xl font-light text-stone-900 font-serif">مرحباً بك في StrideLab</h1>
+                  <h1 className="text-3xl font-bold text-stone-900 font-display">مرحباً بك في StrideLab</h1>
                   <p className="text-stone-500 text-sm max-w-md mx-auto">منصة الجري والتدريب الأولى المخصصة والمحمية بنصائح الذكاء الاصطناعي وإشراف المدربين المحترفين.</p>
                 </div>
 
@@ -436,7 +496,7 @@ export default function App() {
               <div className="bg-white border border-stone-200 shadow-md p-10 space-y-8 rounded-sm">
                 <div className="flex justify-between items-center pb-4 border-b border-stone-150">
                   <div>
-                    <h2 className="text-2xl font-light text-stone-900 font-serif">الملف الرياضي وإعدادات التقييم</h2>
+                    <h2 className="text-2xl font-bold text-stone-900 font-display">الملف الرياضي وإعدادات التقييم</h2>
                     <p className="text-stone-400 text-xs mt-1">يستعمل الذكاء الاصطناعي هذه الحسابات الرياضية لبناء مسودتك البدئية للتحمل الهوائي.</p>
                   </div>
                   <span className="text-xs text-stone-400 font-mono font-bold bg-stone-100 px-3 py-1.5 rounded-sm">الخطوة ٢ من ٥</span>
@@ -509,7 +569,7 @@ export default function App() {
                     رجوع
                   </button>
                   <button 
-                    onClick={() => setOnboardingStep(3)}
+                    onClick={handleGenerateAssessment}
                     className="px-6 py-3 bg-emerald-950 hover:bg-emerald-900 text-white text-xs font-bold uppercase rounded-sm shadow-sm"
                   >
                     تأكيد وإنشاء التقدير المبدئي
@@ -524,31 +584,52 @@ export default function App() {
                 <div className="flex justify-between items-center pb-4 border-b border-stone-150">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-emerald-800" />
-                    <h2 className="text-2xl font-light text-stone-900 font-serif">التقدير المبدئي من ذكاء StrideLab AI</h2>
+                    <h2 className="text-2xl font-bold text-stone-900 font-display">التقدير المبدئي من ذكاء StrideLab AI</h2>
                   </div>
                   <span className="text-xs text-stone-400 font-mono font-bold bg-stone-100 px-3 py-1.5 rounded-sm">الخطوة ٣ من ٥</span>
                 </div>
 
-                <div className="p-6 bg-emerald-50 border-r-4 border-emerald-800 space-y-4 rounded-sm">
-                  <h3 className="font-bold text-emerald-950 text-sm">المسار التدريبي المتوقع بمستواك الحالي</h3>
-                  <p className="text-xs text-stone-700 leading-relaxed font-light">
-                    بناءً على وزنك التدريبي المستقر وجدول لياقتك كـ <strong>{onboardForm.level}</strong>، يتوقع النظام قدرتك على استهداف مسافة <strong>{onboardForm.targetDistance}</strong> وإنهائها في غضون <strong>~٤٥:٠٠ دقيقة</strong> بأمان تام.
-                  </p>
-                  <p className="text-xs text-emerald-800 font-medium">
-                    * ملاحظة: هذا تقدير مبدئي رياضي ويتطلب موافقة وتعديل يدوي من مدربك الشخصي لضمان خطة خالية من الإصابات وعقد الاستقرار التدريبي.
-                  </p>
-                </div>
+                {isGeneratingAssessment ? (
+                  <div className="p-12 text-center space-y-4">
+                    <div className="w-12 h-12 rounded-full border-4 border-emerald-800 border-t-transparent animate-spin mx-auto" />
+                    <div>
+                      <p className="text-sm font-bold text-emerald-900">جاري صياغة تقديرك المبدئي الفسيولوجي المخصص...</p>
+                      <p className="text-xs text-stone-400 mt-1">يتحقق محرك الذكاء الاصطناعي من نسب الوزن والطول والخبرة مع الأهداف</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6 animate-fadeIn">
+                    <div className="p-6 bg-emerald-50 border-r-4 border-emerald-800 space-y-4 rounded-sm">
+                      <h3 className="font-bold text-emerald-950 text-sm">المسار التدريبي المتوقع بمستواك الحالي</h3>
+                      <p className="text-xs text-stone-700 leading-relaxed font-light">
+                        بناءً على وزنك التدريبي المستقر وجدول لياقتك كـ <strong>{onboardForm.level}</strong>، يتوقع النظام قدرتك على استهداف مسافة <strong>{onboardForm.targetDistance}</strong> وإنهائها في غضون <strong className="text-emerald-900 font-semibold font-mono text-sm">{aiAssessment?.estimatedTime || "~٤٥:٠٠ دقيقة"}</strong> بأمان تام.
+                      </p>
+                      <div className="text-xs text-stone-600 font-light mt-2 border-t border-emerald-100 pt-3">
+                        <strong className="text-emerald-950 font-bold">توصية الذكاء الاصطناعي الفسيولوجية:</strong> {aiAssessment?.advice || "بناءً على وتيرة لياقتك الحالية، يُنصح بالالتزام بجري هوائي منخفض الشدة في البداية لبناء عتبة تحمل قوية وتفادي الإصابات الشائعة."}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-stone-500 font-mono pt-1">
+                        <span>مستوى الثقة في التقدير الرياضي:</span>
+                        <span className="text-emerald-800 font-bold">{aiAssessment?.confidence || "مرتفع"}</span>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-stone-400 font-light italic">
+                      * ملاحظة: هذا تقدير مبدئي فسيولوجي مخصص ويتطلب مراجعة وتعديل يدوي من مدربك الشخصي لضمان خطة خالية من الإصابات وعقد الاستقرار التدريبي.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center pt-6 border-t border-stone-150">
                   <button 
+                    disabled={isGeneratingAssessment}
                     onClick={() => setOnboardingStep(2)}
-                    className="text-xs font-bold text-stone-500 hover:text-stone-950 uppercase tracking-wider"
+                    className="text-xs font-bold text-stone-500 hover:text-stone-950 disabled:opacity-50 uppercase tracking-wider"
                   >
                     رجوع وتعديل البيانات
                   </button>
                   <button 
+                    disabled={isGeneratingAssessment}
                     onClick={() => setOnboardingStep(4)}
-                    className="px-6 py-3 bg-emerald-950 hover:bg-emerald-900 text-white text-xs font-bold uppercase rounded-sm shadow-sm"
+                    className="px-6 py-3 bg-emerald-950 hover:bg-emerald-900 disabled:opacity-50 text-white text-xs font-bold uppercase rounded-sm shadow-sm"
                   >
                     ابدأ البحث عن مدرب معتمد
                   </button>
@@ -561,7 +642,7 @@ export default function App() {
               <div className="bg-white border border-stone-200 shadow-md p-10 space-y-8 rounded-sm">
                 <div className="flex justify-between items-center pb-4 border-b border-stone-150">
                   <div>
-                    <h2 className="text-2xl font-light text-stone-900 font-serif">قائمة المدربين المعتمدين</h2>
+                    <h2 className="text-2xl font-bold text-stone-900 font-display">قائمة المدربين المعتمدين</h2>
                     <p className="text-stone-400 text-xs mt-1">اختر المدرب الأنسب لمتابعة ومراقبة خطتك المقترحة من الذكاء الاصطناعي.</p>
                   </div>
                   <span className="text-xs text-stone-400 font-mono font-bold bg-stone-100 px-3 py-1.5 rounded-sm">الخطوة ٤ من ٥</span>
@@ -606,7 +687,7 @@ export default function App() {
               <div className="bg-white border border-stone-200 shadow-md p-10 space-y-8 rounded-sm">
                 <div className="flex justify-between items-center pb-4 border-b border-stone-150">
                   <div>
-                    <h2 className="text-2xl font-light text-stone-900 font-serif">ملف المدرب وإتمام الاتصال التدريبي</h2>
+                    <h2 className="text-2xl font-bold text-stone-900 font-display">ملف المدرب وإتمام الاتصال التدريبي</h2>
                     <p className="text-stone-400 text-xs mt-1">تأكيد الاشتراك وتأسيس الاتصال الهاتفي والميكانيكي اللحظي لساعتك مع المدرب.</p>
                   </div>
                   <span className="text-xs text-stone-400 font-mono font-bold bg-stone-100 px-3 py-1.5 rounded-sm">الخطوة ٥ من ٥</span>
@@ -711,7 +792,7 @@ export default function App() {
             <div className="w-8 h-8 bg-emerald-500 rounded-sm flex items-center justify-center shadow-md">
               <div className="w-4 h-4 border-2 border-white rotate-45"></div>
             </div>
-            <span className="text-emerald-50 font-bold tracking-tight text-xl font-serif">StrideLab</span>
+            <span className="text-emerald-50 font-bold tracking-tight text-xl font-display">StrideLab</span>
           </div>
 
           <nav className="space-y-1.5">

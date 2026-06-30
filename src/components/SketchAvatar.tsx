@@ -12,19 +12,21 @@ export function getGender(avatarUrl?: string, name?: string): 'male' | 'female' 
     if (
       n.includes('سارة') || 
       n.includes('sara') || 
-      n.includes('منصور') || // Wait, منصور is usually male, but let's check female names
       n.includes('sarah') ||
       n.includes('فاطمة') ||
       n.includes('نورة') ||
       n.includes('منى') ||
       n.includes('هند') ||
       n.includes('ريم') ||
-      n.includes('ياسمين')
+      n.includes('ياسمين') ||
+      n.includes('علياء') ||
+      n.includes('هيفاء') ||
+      n.includes('أمل') ||
+      n.includes('عهود') ||
+      n.includes('العنود') ||
+      n.includes('خلود')
     ) {
-      // Avoid accidental gender flips if it's explicitly a male name
-      if (!n.includes('أحمد') && !n.includes('محمد') && !n.includes('فهد')) {
-        return 'female';
-      }
+      return 'female';
     }
   }
   if (avatarUrl) {
@@ -40,7 +42,7 @@ export function SketchAvatar({ name, avatarUrl, className = 'w-12 h-12' }: Sketc
 
   return (
     <div 
-      className={`rounded-full bg-stone-100 border border-stone-200/60 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 ${className}`}
+      className={`rounded-full bg-stone-100 border border-stone-200/40 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 shrink-0 ${className}`}
       title={name}
       id={`sketch-avatar-${name ? encodeURIComponent(name) : 'unknown'}`}
     >
@@ -48,71 +50,79 @@ export function SketchAvatar({ name, avatarUrl, className = 'w-12 h-12' }: Sketc
         <svg 
           viewBox="0 0 100 100" 
           fill="none" 
-          className="w-full h-full"
+          className="w-full h-full scale-105"
         >
           {/* Background circle */}
-          <circle cx="50" cy="50" r="48" fill="#FDF2F8" />
+          <circle cx="50" cy="50" r="48" fill="#FCE7F3" />
           
-          {/* Hair Back */}
-          <path d="M30 65 C 20 50, 20 30, 40 22 C 45 20, 55 20, 60 22 C 70 25, 76 35, 74 48" fill="#1C1917" />
+          {/* Ponytail Back */}
+          <path d="M22 42 C 12 40, 8 52, 14 62 C 18 66, 26 62, 25 51 C 24 40, 30 40, 34 45" fill="#312E81" />
+          <circle cx="26" cy="42" r="4" fill="#F472B6" />
           
-          {/* Ponytail/Bun */}
-          <path d="M25 45 C 12 45, 8 58, 14 68 C 18 72, 26 66, 25 55" fill="#1C1917" />
-          <circle cx="26" cy="46" r="3.5" fill="#F472B6" />
+          {/* Hair Back of Head */}
+          <path d="M28 65 C 22 52, 24 32, 40 24 C 46 21, 54 21, 60 23 C 68 26, 73 34, 72 46" fill="#312E81" />
           
           {/* Neck */}
-          <path d="M42 75 L 45 56 C 45 56, 46 44, 55 44 C 64 44, 65 56, 65 56 L 68 75" fill="#FDBA74" />
+          <path d="M43 72 L 45 56 C 45 56, 46 45, 55 45 C 64 45, 65 56, 65 56 L 67 72" fill="#FDBA74" />
           
           {/* Face */}
-          <path d="M43 47 C 43 34, 67 34, 67 47 C 67 60, 43 60, 43 47 Z" fill="#FED7AA" />
+          <path d="M43 48 C 43 36, 67 36, 67 48 C 67 60, 43 60, 43 48 Z" fill="#FED7AA" />
           
-          {/* Sporty Headband */}
-          <path d="M43 40 C 49 35, 61 35, 67 40 L 68 44 C 62 39, 48 39, 42 44 Z" fill="#DB2777" />
+          {/* Sporty Headband / Cap Visor */}
+          <path d="M42 41 C 48 37, 62 37, 68 41 L 69 44 C 63 40, 47 40, 41 44 Z" fill="#EC4899" />
           
-          {/* Sunglasses (Sporty Shield glasses) */}
-          <path d="M47 45 H 63 L 61 51 C 57 54, 53 54, 49 51 Z" fill="#111827" />
-          <path d="M49 46 H 61 L 60 49 H 50 Z" fill="#38BDF8" opacity="0.6" />
+          {/* Athletic Sunglasses (Sporty Shield glasses) */}
+          <path d="M47 46 H 63 L 61 51 C 57 54, 53 54, 49 51 Z" fill="#1E1B4B" />
+          {/* Lens reflection */}
+          <path d="M48 47 H 62 L 61 49 H 49 Z" fill="#38BDF8" opacity="0.7" />
           
           {/* Smile */}
-          <path d="M52 58 C 54 60, 56 60, 58 58" stroke="#9A3412" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M51 57 C 53 59, 57 59, 59 57" stroke="#9A3412" strokeWidth="2" strokeLinecap="round" />
           
-          {/* Athletic Shirt */}
-          <path d="M26 100 C 26 83, 36 74, 50 74 C 64 74, 74 83, 74 100" fill="#DB2777" />
+          {/* Athletic Top / Shirt */}
+          <path d="M26 100 C 26 84, 36 74, 50 74 C 64 74, 74 84, 74 100" fill="#EC4899" />
           <path d="M44 74 L 50 83 L 56 74" fill="#FED7AA" />
+          
+          {/* Collar Accent */}
+          <path d="M28 100 L 40 85" stroke="#FCE7F3" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
         </svg>
       ) : (
         <svg 
           viewBox="0 0 100 100" 
           fill="none" 
-          className="w-full h-full"
+          className="w-full h-full scale-105"
         >
           {/* Background circle */}
           <circle cx="50" cy="50" r="48" fill="#E0F2FE" />
           
-          {/* Hair */}
-          <path d="M30 46 C 30 25, 70 25, 70 46" fill="#292524" />
-          <path d="M30 46 C 30 30, 40 20, 50 20 C 60 20, 70 30, 70 46 Z" fill="#292524" />
-          <path d="M30 40 L 35 32 L 42 35 L 50 30 L 60 35 L 68 32 L 70 40 Z" fill="#1C1917" />
+          {/* Hair Back of Head */}
+          <path d="M30 46 C 30 26, 70 26, 70 46" fill="#1C1917" />
+          <path d="M30 46 C 30 31, 40 21, 50 21 C 60 21, 70 31, 70 46 Z" fill="#1C1917" />
+          <path d="M28 41 L 34 33 L 41 36 L 50 31 L 59 36 L 66 33 L 72 41 Z" fill="#1C1917" />
           
           {/* Neck */}
-          <path d="M42 75 L 44 58 C 44 58, 45 46, 55 46 C 65 46, 66 58, 66 58 L 68 75" fill="#FDBA74" />
+          <path d="M43 72 L 45 56 C 45 56, 46 45, 55 45 C 64 45, 65 56, 65 56 L 67 72" fill="#FDBA74" />
           
           {/* Face */}
-          <path d="M43 47 C 43 35, 67 35, 67 47 C 67 59, 43 59, 43 47 Z" fill="#FED7AA" />
+          <path d="M43 48 C 43 36, 67 36, 67 48 C 67 60, 43 60, 43 48 Z" fill="#FED7AA" />
           
-          {/* Sporty Headband */}
-          <path d="M42 39 C 48 35, 62 35, 68 39 L 68 42 C 62 38, 48 38, 42 42 Z" fill="#047857" />
+          {/* Sporty Visor / Cap */}
+          <path d="M38 38 C 44 33, 56 33, 62 38 L 74 42 C 68 39, 44 39, 36 42 Z" fill="#047857" />
           
-          {/* Sunglasses (Sporty Shield glasses) */}
-          <path d="M47 45 H 63 L 61 51 C 57 54, 53 54, 49 51 Z" fill="#111827" />
-          <path d="M49 46 H 61 L 60 49 H 50 Z" fill="#34D399" opacity="0.6" />
+          {/* Athletic Sunglasses (Sporty Shield glasses) */}
+          <path d="M47 46 H 63 L 61 51 C 57 54, 53 54, 49 51 Z" fill="#1E1B4B" />
+          {/* Lens reflection */}
+          <path d="M48 47 H 62 L 61 49 H 49 Z" fill="#34D399" opacity="0.7" />
           
           {/* Smile */}
-          <path d="M52 58 C 54 60, 56 60, 58 58" stroke="#9A3412" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M51 57 C 53 59, 57 59, 59 57" stroke="#9A3412" strokeWidth="2" strokeLinecap="round" />
           
-          {/* Athletic Shirt */}
-          <path d="M26 100 C 26 84, 36 75, 50 75 C 64 75, 74 84, 74 100" fill="#047857" />
-          <path d="M44 75 L 50 85 L 56 75" fill="#FED7AA" />
+          {/* Athletic Top / Shirt */}
+          <path d="M26 100 C 26 84, 36 74, 50 74 C 64 74, 74 84, 74 100" fill="#047857" />
+          <path d="M44 74 L 50 83 L 56 74" fill="#FED7AA" />
+          
+          {/* Collar Accent */}
+          <path d="M28 100 L 40 85" stroke="#E0F2FE" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
         </svg>
       )}
     </div>
@@ -125,7 +135,6 @@ interface CommunitySketchProps {
 }
 
 export function CommunitySketch({ name = '', className = 'w-full h-48' }: CommunitySketchProps) {
-  // Determine community type from name
   const isRiyadh = name.includes('الرياض') || name.includes('R7');
   const isJeddah = name.includes('جدة') || name.includes('ساحل');
   const isKhobar = name.includes('الخبر') || name.includes('شرق');
@@ -136,7 +145,6 @@ export function CommunitySketch({ name = '', className = 'w-full h-48' }: Commun
         className={`bg-gradient-to-br from-amber-50 to-orange-100/50 border border-stone-200 rounded-sm flex items-center justify-center p-4 overflow-hidden relative ${className}`}
         id="community-riyadh"
       >
-        {/* Subtle grid pattern */}
         <div className="absolute inset-0 bg-grid-stone-100 opacity-20 pointer-events-none" />
         
         <svg viewBox="0 0 300 160" fill="none" className="w-full h-full max-h-48 z-10">
