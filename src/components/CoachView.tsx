@@ -1,26 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SketchAvatar } from './SketchAvatar';
-import { 
-  Users, 
-  ClipboardCheck, 
-  AlertTriangle, 
-  ArrowRight, 
-  BrainCircuit, 
-  Search, 
-  Plus, 
-  CheckCircle2, 
-  TrendingUp, 
-  Heart, 
-  Activity, 
-  Clock, 
+import {
+  Users,
+  ClipboardCheck,
+  AlertTriangle,
+  ArrowRight,
+  Search,
+  Plus,
+  CheckCircle2,
+  Activity,
   Compass,
   X,
   Sparkles,
   Calendar,
-  ShieldCheck,
-  Dumbbell,
-  Zap
+  ShieldCheck
 } from 'lucide-react';
 import { PlayerStatus, Workout } from '../types';
 
@@ -292,78 +286,63 @@ export default function CoachView({
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6 md:space-y-8"
           >
-            {/* Header section with responsive layout */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 border border-stone-200/80 rounded-sm shadow-sm">
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider font-mono">لوحة تحكم المدرب فؤاد</span>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-stone-950 tracking-tight font-display">مركز القيادة (Coach Dashboard)</h1>
-                <p className="text-stone-500 text-xs md:text-sm font-sans font-light">نظرة عامة على أداء لاعبيك، تنبيهات الإجهاد، واعتمادات الذكاء الاصطناعي الجاهزة.</p>
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="space-y-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-stone-950 tracking-tight font-display">مركز القيادة</h1>
+                <p className="text-stone-500 text-xs md:text-sm">نظرة عامة على أداء لاعبيك والإجراءات التي تحتاج لمتابعتك.</p>
               </div>
-              <button 
+              <button
                 onClick={() => setShowAddModal(true)}
-                className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-emerald-950 text-white hover:bg-emerald-900 transition-all text-xs font-bold tracking-wider uppercase rounded-sm shadow-sm"
+                className="w-full md:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-950 text-white hover:bg-emerald-900 transition-colors text-xs font-bold rounded-sm"
               >
-                <Plus className="w-4 h-4" /> إضافة لاعب جديد للتدريب
+                <Plus className="w-4 h-4" /> إضافة لاعب جديد
               </button>
             </div>
 
-            {/* Metric counters Bento style */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
-              
-              <div 
+            {/* Metric counters */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+              <div
                 onClick={() => setActiveSubView('all_athletes')}
-                className="bg-white p-5 md:p-6 border border-stone-200 border-r-4 border-r-emerald-800 shadow-sm flex justify-between items-center cursor-pointer hover:border-emerald-600 hover:shadow transition-all rounded-sm group"
+                className="bg-white p-5 border border-stone-200 rounded-sm flex justify-between items-center cursor-pointer hover:border-stone-300 transition-colors"
               >
                 <div>
-                  <p className="text-[10px] uppercase text-stone-400 font-bold mb-1 tracking-wider">العدّاؤون النشطون</p>
-                  <h3 className="text-3xl md:text-4xl font-light text-stone-900 group-hover:text-emerald-950 transition-colors">{athletes.length}</h3>
-                  <span className="text-[9px] text-emerald-800 font-medium block mt-1">عرض جميع الملفات ←</span>
+                  <p className="text-xs text-stone-500 mb-1">العدّاؤون النشطون</p>
+                  <h3 className="text-3xl font-bold text-stone-900">{athletes.length}</h3>
                 </div>
-                <div className="w-12 h-12 bg-emerald-50 rounded-sm border border-emerald-100 flex items-center justify-center text-emerald-800 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 bg-stone-50 rounded-sm flex items-center justify-center text-stone-500">
                   <Users className="w-5 h-5" />
                 </div>
               </div>
 
-              <div 
+              <div
                 onClick={() => {
                   const toReview = athletes.find(a => a.status === 'needs_review') || athletes[2] || athletes[0];
                   if (toReview) startPlanReview(toReview);
                 }}
-                className="bg-white p-5 md:p-6 border border-stone-200 border-r-4 border-r-amber-500 shadow-sm flex justify-between items-center cursor-pointer hover:border-amber-400 hover:shadow transition-all rounded-sm group"
+                className="bg-white p-5 border border-stone-200 rounded-sm flex justify-between items-center cursor-pointer hover:border-stone-300 transition-colors"
               >
                 <div>
-                  <p className="text-[10px] uppercase text-stone-400 font-bold mb-1 tracking-wider">مسودات خطط للمراجعة</p>
-                  <h3 className="text-3xl md:text-4xl font-light text-stone-900 group-hover:text-amber-850 transition-colors">
+                  <p className="text-xs text-stone-500 mb-1">مسودات بانتظار المراجعة</p>
+                  <h3 className="text-3xl font-bold text-stone-900">
                     {athletes.filter(a => a.status === 'needs_review').length}
                   </h3>
-                  <span className="text-[9px] text-amber-700 font-medium block mt-1">توليد وموافقة بالذكاء الاصطناعي ←</span>
                 </div>
-                <div className="w-12 h-12 bg-amber-50 rounded-sm border border-amber-100 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+                <div className="w-10 h-10 bg-stone-50 rounded-sm flex items-center justify-center text-stone-500">
                   <ClipboardCheck className="w-5 h-5" />
                 </div>
               </div>
 
-              <div 
-                className={`p-5 md:p-6 border shadow-sm flex justify-between items-center rounded-sm transition-all ${
-                  activeAlerts.length > 0 
-                    ? 'border-red-200 border-r-4 border-r-red-600 bg-red-50/25 hover:bg-red-50/40 cursor-pointer' 
-                    : 'border-stone-200 border-r-4 border-r-stone-400 bg-white'
-                }`}
-              >
+              <div className="bg-white p-5 border border-stone-200 rounded-sm flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] uppercase text-stone-400 font-bold mb-1 tracking-wider">تنبيهات الحمل الزائد</p>
-                  <h3 className={`text-3xl md:text-4xl font-light ${activeAlerts.length > 0 ? 'text-red-700' : 'text-stone-700'}`}>
+                  <p className="text-xs text-stone-500 mb-1">تنبيهات الحمل الزائد</p>
+                  <h3 className={`text-3xl font-bold ${activeAlerts.length > 0 ? 'text-red-600' : 'text-stone-900'}`}>
                     {activeAlerts.length}
                   </h3>
-                  <span className="text-[9px] text-stone-400 block mt-1">
-                    {activeAlerts.length > 0 ? 'يتطلب تعديل مسار تدريبي فوري!' : 'جميع الحيوية والجهد مستقر'}
-                  </span>
                 </div>
-                <div className={`w-12 h-12 rounded-sm flex items-center justify-center ${
-                  activeAlerts.length > 0 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-stone-100 text-stone-500'
+                <div className={`w-10 h-10 rounded-sm flex items-center justify-center ${
+                  activeAlerts.length > 0 ? 'bg-red-50 text-red-600' : 'bg-stone-50 text-stone-500'
                 }`}>
                   <AlertTriangle className="w-5 h-5" />
                 </div>
@@ -372,22 +351,17 @@ export default function CoachView({
             </div>
 
             {/* Priority Actions and List layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-              
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
               {/* Actions columns */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="flex justify-between items-center pb-2">
-                  <h2 className="text-xs font-bold tracking-widest uppercase text-stone-500">إجراءات مستعجلة ذات أولوية</h2>
-                  <span className="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-sm font-medium font-mono">تنبيهات المدرب</span>
-                </div>
+              <div className="lg:col-span-2 space-y-3">
+                <h2 className="text-sm font-bold text-stone-800 pb-1">يحتاج إلى متابعتك</h2>
 
                 {activeAlerts.length === 0 && athletes.filter(a => a.status === 'needs_review').length === 0 && (
-                  <div className="bg-white p-10 border border-stone-200/80 text-center text-stone-500 text-xs rounded-sm shadow-sm space-y-3">
-                    <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-800">
-                      <CheckCircle2 className="w-5 h-5" />
-                    </div>
-                    <p className="font-semibold text-stone-800">لا توجد مسودات أو إجهاد حاد للرياضيين</p>
-                    <p className="text-[11px] text-stone-400 max-w-sm mx-auto">✓ جميع الإجراءات مكتملة! لاعبوك يسيرون على الخطط التدريبية بأمان ومؤشراتهم الحيوية ممتازة.</p>
+                  <div className="bg-white p-8 border border-stone-200 text-center rounded-sm space-y-2">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-700 mx-auto" />
+                    <p className="font-semibold text-stone-800 text-sm">لا توجد إجراءات معلّقة</p>
+                    <p className="text-xs text-stone-400">لاعبوك يسيرون على خططهم التدريبية بأمان حالياً.</p>
                   </div>
                 )}
 
@@ -395,70 +369,58 @@ export default function CoachView({
                 {activeAlerts.map((alert) => {
                   const athlete = athletes.find(a => a.id === alert.athleteId) || athletes[1];
                   return (
-                    <div 
+                    <div
                       key={alert.id}
-                      className="bg-white border border-stone-200 border-r-4 border-r-red-600 shadow-sm p-5 md:p-6 relative rounded-sm space-y-4"
+                      className="bg-white border border-stone-200 border-r-2 border-r-red-500 rounded-sm p-5 space-y-3"
                     >
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <div className="flex items-center gap-3">
-                          <SketchAvatar name={athlete.name} avatarUrl={athlete.avatar} className="w-10 h-10" />
+                          <SketchAvatar name={athlete.name} avatarUrl={athlete.avatar} className="w-9 h-9" />
                           <div>
                             <h4 className="font-semibold text-stone-900 text-sm">{athlete.name}</h4>
-                            <p className="text-[9px] font-mono text-stone-400">الهدف: {athlete.goal}</p>
+                            <p className="text-xs text-stone-400">{athlete.goal}</p>
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-100 px-2.5 py-1 rounded-sm flex items-center gap-1">
-                          <AlertTriangle className="w-3.5 h-3.5" /> {alert.title}
+                        <span className="text-xs font-medium text-red-700 bg-red-50 px-2 py-1 rounded-sm">
+                          {alert.title}
                         </span>
                       </div>
-                      
-                      <div className="bg-rose-50/50 p-4 border border-rose-100 rounded-sm text-xs text-stone-600 leading-relaxed font-light space-y-3">
-                        <p>{alert.description}</p>
-                        
-                        <div className="pt-3 border-t border-rose-200/50 space-y-2">
-                          <div className="flex items-start gap-1.5 text-stone-800">
-                            <Sparkles className={`w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5 ${loadingAlerts[alert.id] ? 'animate-spin' : ''}`} />
-                            <span className="leading-relaxed">
-                              <strong className="text-emerald-950 font-bold">توصية الذكاء الاصطناعي:</strong>{' '}
-                              {loadingAlerts[alert.id] ? (
-                                <span className="text-stone-400 italic animate-pulse">جاري صياغة التوصية الحية المخصصة عبر StrideLab AI...</span>
-                              ) : (
-                                alertRecommendations[alert.id] || "اضغط على الزر أدناه لتوليد توصية علاجية وقائية مخصصة."
-                              )}
-                            </span>
-                          </div>
 
-                          <div className="flex justify-end pt-1">
-                            <button
-                              onClick={() => handleGenerateLiveAlertRecommendation(alert.id)}
-                              disabled={loadingAlerts[alert.id]}
-                              className="inline-flex items-center gap-1.5 text-[9px] font-bold text-emerald-800 hover:text-emerald-950 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/50 px-3 py-1.5 rounded-sm transition-all shadow-inner disabled:opacity-50"
-                            >
-                              <Sparkles className="w-2.5 h-2.5 shrink-0" />
-                              {loadingAlerts[alert.id] ? 'جاري التحليل...' : 'طلب توصية حية بالذكاء الاصطناعي ✦'}
-                            </button>
-                          </div>
-                        </div>
+                      <p className="text-xs text-stone-600 leading-relaxed">{alert.description}</p>
+
+                      <div className="bg-stone-50 p-3 rounded-sm text-xs text-stone-700 leading-relaxed">
+                        {loadingAlerts[alert.id] ? (
+                          <span className="text-stone-400">جاري صياغة التوصية...</span>
+                        ) : (
+                          <span>{alertRecommendations[alert.id] || "اضغط على \"توصية مخصصة\" لتوليد إرشاد علاجي مبني على بيانات اللاعب."}</span>
+                        )}
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                        <button 
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <button
                           onClick={() => {
                             onResolveAlert(alert.id, { workoutIndex: 3, field: 'distance', value: '14 كم' });
-                            setToastMessage(`✓ تم تطبيق التوصية الطبية والتدريبية لتخفيض مسافة جري ${athlete.name} وتثبيت حمله التدريبي.`);
+                            setToastMessage(`تم تطبيق التوصية وتخفيض مسافة جري ${athlete.name}.`);
                           }}
-                          className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold tracking-wider uppercase rounded-sm transition-colors shadow-sm text-center"
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-sm transition-colors"
                         >
-                          اعتماد التوصية الوقائية فوراً
+                          اعتماد التوصية فوراً
                         </button>
-                        <button 
+                        <button
+                          onClick={() => handleGenerateLiveAlertRecommendation(alert.id)}
+                          disabled={loadingAlerts[alert.id]}
+                          className="px-4 py-2 bg-white border border-stone-200 text-stone-700 text-xs font-bold rounded-sm hover:bg-stone-50 transition-colors disabled:opacity-50"
+                        >
+                          {loadingAlerts[alert.id] ? 'جاري التحليل...' : 'توصية مخصصة'}
+                        </button>
+                        <button
                           onClick={() => {
                             setSelectedAthleteId(athlete.id);
                             setActiveSubView('athlete_detail');
                           }}
-                          className="px-4 py-2.5 bg-stone-50 border border-stone-200 text-stone-700 text-[10px] font-bold tracking-wider uppercase rounded-sm hover:bg-stone-100 transition-colors text-center"
+                          className="px-4 py-2 text-stone-500 text-xs font-bold rounded-sm hover:bg-stone-50 transition-colors"
                         >
-                          المراجعة التدريبية للملف
+                          عرض الملف
                         </button>
                       </div>
                     </div>
@@ -467,82 +429,77 @@ export default function CoachView({
 
                 {/* Draft Review Cards */}
                 {athletes.filter(a => a.status === 'needs_review').map((athlete) => (
-                  <div 
+                  <div
                     key={athlete.id}
-                    className="bg-white border border-stone-200 shadow-sm p-5 md:p-6 rounded-sm space-y-4"
+                    className="bg-white border border-stone-200 rounded-sm p-5 space-y-3"
                   >
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                       <div className="flex items-center gap-3">
-                        <SketchAvatar name={athlete.name} avatarUrl={athlete.avatar} className="w-10 h-10" />
+                        <SketchAvatar name={athlete.name} avatarUrl={athlete.avatar} className="w-9 h-9" />
                         <div>
                           <h4 className="font-semibold text-stone-900 text-sm">{athlete.name}</h4>
-                          <p className="text-[9px] font-mono text-stone-400">آخر نشاط: {athlete.lastActivity}</p>
+                          <p className="text-xs text-stone-400">آخر نشاط: {athlete.lastActivity}</p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-sm flex items-center gap-1">
-                        <BrainCircuit className="w-3.5 h-3.5 text-emerald-800" /> مسودة ذكية جاهزة للمراجعة
+                      <span className="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded-sm">
+                        مسودة جاهزة للمراجعة
                       </span>
                     </div>
 
-                    <p className="text-xs text-stone-600 leading-relaxed font-light">
-                      قام StrideLab AI بإنشاء مسودة خطة الشهر الثاني المخصصة لـ {athlete.name} (المستهدف: {athlete.goal}) مدمجاً بها زيادة تكتيكية تدريجية في حجم التدريب الهوائي وهرولة التحمل لمسافة 15 كم.
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      خطة الشهر القادم لـ {athlete.name} (المستهدف: {athlete.goal}) جاهزة بزيادة حمل تدريجية وهرولة تحمل 15 كم.
                     </p>
 
-                    <div className="pt-2">
-                      <button 
-                        onClick={() => startPlanReview(athlete)}
-                        className="w-full sm:w-auto px-5 py-2.5 bg-emerald-950 hover:bg-emerald-900 text-white text-[10px] font-bold tracking-wider uppercase rounded-sm transition-all shadow-sm flex items-center justify-center gap-1.5"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-300" /> مراجعة وتعديل الخطة التدريبية
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => startPlanReview(athlete)}
+                      className="px-4 py-2 bg-emerald-950 hover:bg-emerald-900 text-white text-xs font-bold rounded-sm transition-colors"
+                    >
+                      مراجعة الخطة
+                    </button>
                   </div>
                 ))}
 
               </div>
 
               {/* Mini Roster sidebar in C1 */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center pb-2">
-                  <h2 className="text-xs font-bold tracking-widest uppercase text-stone-500">قائمة العدّائين الفورية</h2>
-                  <button 
+              <div className="space-y-3">
+                <div className="flex justify-between items-center pb-1">
+                  <h2 className="text-sm font-bold text-stone-800">اللاعبون</h2>
+                  <button
                     onClick={() => setActiveSubView('all_athletes')}
-                    className="text-[10px] text-emerald-800 font-bold uppercase tracking-wider hover:underline"
+                    className="text-xs text-emerald-800 font-medium hover:underline"
                   >
-                    عرض الكل ({athletes.length})
+                    عرض الكل
                   </button>
                 </div>
 
-                <div className="bg-white border border-stone-200 shadow-sm rounded-sm overflow-hidden divide-y divide-stone-100">
+                <div className="bg-white border border-stone-200 rounded-sm overflow-hidden divide-y divide-stone-100">
                   {athletes.map((ath) => (
-                    <div 
+                    <div
                       key={ath.id}
                       onClick={() => {
                         setSelectedAthleteId(ath.id);
                         setActiveSubView('athlete_detail');
                       }}
-                      className="p-4 flex items-center justify-between hover:bg-stone-50/50 cursor-pointer transition-colors"
+                      className="p-3.5 flex items-center justify-between hover:bg-stone-50 cursor-pointer transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <SketchAvatar name={ath.name} avatarUrl={ath.avatar} className="w-9 h-9" />
+                      <div className="flex items-center gap-2.5">
+                        <SketchAvatar name={ath.name} avatarUrl={ath.avatar} className="w-8 h-8" />
                         <div>
-                          <h4 className="font-semibold text-stone-900 text-xs">{ath.name}</h4>
-                          <p className="text-[9px] text-stone-400 font-mono">آخر نشاط: {ath.lastActivity}</p>
+                          <h4 className="font-medium text-stone-900 text-xs">{ath.name}</h4>
+                          <p className="text-[10px] text-stone-400">{ath.weeklyDistance}</p>
                         </div>
                       </div>
 
-                      <div className="text-left space-y-1">
-                        <span className={`inline-block text-[8px] font-bold px-2 py-0.5 rounded-sm ${
-                          ath.status === 'on_track' ? 'bg-emerald-100 text-emerald-800' :
-                          ath.status === 'needs_review' ? 'bg-amber-100 text-amber-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {ath.status === 'on_track' && 'مستقر'}
-                          {ath.status === 'needs_review' && 'مراجعة الخطة'}
-                          {ath.status === 'at_risk' && 'حمل زائد'}
-                        </span>
-                        <p className="text-[9px] text-stone-400 font-mono font-bold">{ath.weeklyDistance}</p>
-                      </div>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-sm ${
+                        ath.status === 'on_track' ? 'bg-emerald-50 text-emerald-700' :
+                        ath.status === 'needs_review' ? 'bg-amber-50 text-amber-700' :
+                        'bg-red-50 text-red-700'
+                      }`}>
+                        {ath.status === 'on_track' && 'مستقر'}
+                        {ath.status === 'needs_review' && 'مراجعة'}
+                        {ath.status === 'at_risk' && 'حمل زائد'}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -853,55 +810,42 @@ export default function CoachView({
 
               </div>
 
-              {/* Sidebar Column (AI Copilot Panel & Live Analysis) - Col span 1 */}
-              <div className="space-y-4 md:space-y-6 order-1 lg:order-2 lg:sticky lg:top-4">
-                
-                {/* AI Copilot control board */}
-                <div className="bg-emerald-950 text-white border border-emerald-900 shadow-lg rounded-sm p-5 md:p-6 space-y-4 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-24 h-24 bg-emerald-800/10 rounded-full blur-2xl pointer-events-none" />
-                  
-                  <div className="space-y-1.5 relative z-10">
-                    <div className="flex items-center gap-1 text-emerald-400 font-bold text-[10px] uppercase tracking-wider">
-                      <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>StrideLab AI Copilot</span>
-                    </div>
-                    <h3 className="text-lg font-bold font-display">مساعد التعديل والنمذجة</h3>
-                    <p className="text-emerald-100/70 text-xs leading-relaxed font-light">
-                      أتمتة تعديل الحمل التدريبي وحجم التدريب الأسبوعي لـ {selectedAthlete.name} بلمسة واحدة.
+              {/* Sidebar Column (Plan Assistant & Live Analysis) - Col span 1 */}
+              <div className="space-y-4 order-1 lg:order-2 lg:sticky lg:top-4">
+
+                {/* Plan generation panel */}
+                <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-stone-900">مساعد بناء الخطة</h3>
+                    <p className="text-stone-500 text-xs mt-1">
+                      توليد أو تمديد خطة {selectedAthlete.name} تلقائياً — الشهر {currentPlanMonth}.
                     </p>
                   </div>
 
-                  <div className="p-3 bg-emerald-900/50 border border-emerald-800 rounded-sm text-xs space-y-1 relative z-10">
-                    <span className="text-[10px] text-emerald-300 font-bold uppercase block tracking-wider">الحالة الحالية للبرنامج:</span>
-                    <span className="font-semibold block text-emerald-50 text-[11px]">الشهر التدريبي المستهدف: الشهر {currentPlanMonth}</span>
-                  </div>
-
-                  <div className="space-y-2 pt-2 relative z-10">
+                  <div className="space-y-2">
                     <button
                       disabled={isGeneratingPlan}
                       onClick={handleGenerateAiPlan}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white text-emerald-950 hover:bg-emerald-50 disabled:opacity-50 text-xs font-bold uppercase rounded-sm shadow-sm transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-950 text-white hover:bg-emerald-900 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
                     >
-                      <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
-                      <span>{isGeneratingPlan ? "جاري التوليد..." : "إعادة التوليد تلقائياً ✦"}</span>
+                      {isGeneratingPlan ? "جاري التوليد..." : "إعادة توليد الخطة"}
                     </button>
 
                     <button
                       disabled={isGeneratingPlan}
                       onClick={handleExtendAiPlan}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-900/40 text-emerald-100 border border-emerald-800 hover:bg-emerald-900/60 disabled:opacity-50 text-xs font-bold uppercase rounded-sm transition-all"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
                     >
-                      <Plus className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span>{isGeneratingPlan ? "جاري التمديد..." : "تمديد خطة الشهر التالي (≤ 10٪) ✦"}</span>
+                      {isGeneratingPlan ? "جاري التمديد..." : "تمديد للشهر التالي (≤ 10٪)"}
                     </button>
                   </div>
                 </div>
 
-                {/* StrideLab AI Live Safety Diagnostics Panel */}
-                <div className={`p-5 border shadow-sm rounded-sm space-y-3 transition-colors ${
-                  safetyStatus.warnings.length > 0 
-                    ? 'bg-rose-50 border-rose-200' 
-                    : 'bg-emerald-50/40 border-emerald-200'
+                {/* Safety Diagnostics Panel */}
+                <div className={`p-5 border rounded-sm space-y-2 ${
+                  safetyStatus.warnings.length > 0
+                    ? 'bg-red-50 border-red-200'
+                    : 'bg-emerald-50/50 border-emerald-200'
                 }`}>
                   <div className="flex items-center gap-1.5">
                     {safetyStatus.warnings.length > 0 ? (
@@ -909,44 +853,39 @@ export default function CoachView({
                     ) : (
                       <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
                     )}
-                    <h4 className={`font-bold text-xs uppercase ${
-                      safetyStatus.warnings.length > 0 ? 'text-red-950' : 'text-emerald-950'
+                    <h4 className={`font-bold text-xs ${
+                      safetyStatus.warnings.length > 0 ? 'text-red-900' : 'text-emerald-900'
                     }`}>
-                      فحص السلامة الرياضية من StrideLab
+                      فحص السلامة
                     </h4>
                   </div>
 
                   {safetyStatus.warnings.length > 0 ? (
-                    <div className="space-y-2">
-                      <p className="text-[10px] text-red-800 font-medium">الخطة الحالية بها بعض النقاط التي تتطلب تحذيراً وقائياً:</p>
-                      <ul className="text-[11px] text-red-900 space-y-1.5 font-light">
-                        {safetyStatus.warnings.map((warning, i) => (
-                          <li key={i} className="flex items-start gap-1 bg-white/60 p-2 rounded-sm border border-red-150">
-                            <span className="text-red-700 font-bold">•</span>
-                            <span>{warning}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    <ul className="text-xs text-red-900 space-y-1.5">
+                      {safetyStatus.warnings.map((warning, i) => (
+                        <li key={i} className="flex items-start gap-1.5 bg-white/60 p-2 rounded-sm">
+                          <span className="text-red-600">•</span>
+                          <span>{warning}</span>
+                        </li>
+                      ))}
+                    </ul>
                   ) : (
-                    <div className="space-y-1">
-                      <p className="text-[11px] text-emerald-900 font-light leading-relaxed">
-                        ✓ تهانينا! الخطة الحالية مطابقة بالكامل لجميع توصيات أمان الحمل والزيادة التكتيكية التدريجية للجري (Progressive Overload &lt; 10%).
-                      </p>
-                    </div>
+                    <p className="text-xs text-emerald-900 leading-relaxed">
+                      الخطة الحالية مطابقة لتوصيات أمان الحمل والزيادة التدريجية الآمنة (أقل من 10٪).
+                    </p>
                   )}
                 </div>
 
-                {/* Patient / Athlete Context info */}
-                <div className="bg-white border border-stone-200 shadow-sm rounded-sm p-4 text-xs space-y-3">
-                  <span className="text-[10px] text-stone-400 block font-bold uppercase tracking-wider pb-1 border-b border-stone-100">
-                    الملخص الفسيولوجي المرجعي لـ {selectedAthlete.name}
+                {/* Athlete Context info */}
+                <div className="bg-white border border-stone-200 rounded-sm p-4 text-xs space-y-2.5">
+                  <span className="text-stone-400 font-medium block pb-1 border-b border-stone-100">
+                    ملخص {selectedAthlete.name}
                   </span>
-                  
-                  <div className="space-y-2 font-mono text-stone-600 font-bold">
-                    <div className="flex justify-between"><span>الهدف الإجمالي:</span> <span className="text-stone-900">{selectedAthlete.goal}</span></div>
-                    <div className="flex justify-between"><span>نبض الاستراحة:</span> <span className="text-stone-900">{selectedAthlete.restingHR} BPM</span></div>
-                    <div className="flex justify-between"><span>الحمل الأسبوعي الحالي:</span> <span className="text-stone-900">{selectedAthlete.weeklyDistance}</span></div>
+
+                  <div className="space-y-2 text-stone-600">
+                    <div className="flex justify-between"><span>الهدف:</span> <span className="text-stone-900 font-medium">{selectedAthlete.goal}</span></div>
+                    <div className="flex justify-between"><span>نبض الاستراحة:</span> <span className="text-stone-900 font-medium">{selectedAthlete.restingHR} BPM</span></div>
+                    <div className="flex justify-between"><span>الحمل الأسبوعي:</span> <span className="text-stone-900 font-medium">{selectedAthlete.weeklyDistance}</span></div>
                   </div>
                 </div>
 
