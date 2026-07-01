@@ -1,23 +1,33 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Users, Calendar, ArrowLeft, ArrowRight, CheckCircle2, Sparkles, MessageSquare, Plus, Send } from 'lucide-react';
-import { Community } from '../types';
-import { CommunitySketch } from './SketchAvatar';
+import { MapPin, Users, Calendar, ArrowRight, Plus } from 'lucide-react';
+import { Community, CommunityEvent } from '../types';
+import { SketchAvatar, CommunitySketch } from './SketchAvatar';
 
 interface CommunitiesViewProps {
   communities: Community[];
   onJoinCommunity: (id: string) => void;
   onLeaveCommunity: (id: string) => void;
+  events: CommunityEvent[];
+  onCreateEvent: (communityId: string, event: Omit<CommunityEvent, 'id' | 'communityId' | 'createdBy' | 'attendees'>) => void;
+  onJoinEvent: (eventId: string) => void;
+  currentUserName: string;
 }
 
 export default function CommunitiesView({
   communities,
   onJoinCommunity,
-  onLeaveCommunity
+  onLeaveCommunity,
+  events,
+  onCreateEvent,
+  onJoinEvent,
+  currentUserName
 }: CommunitiesViewProps) {
-  
+
   const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', date: '', distance: '', location: '' });
   const [feedPosts, setFeedPosts] = useState<Array<{ id: string; user: string; text: string; time: string; distance: string }>>([
     { id: 'p1', user: 'أحمد ف.', text: 'تمارين فترات السرعة صباح اليوم في وادي حنيفة كانت ممتازة! طاقة القروب عالية جداً.', time: 'منذ 10 دقائق', distance: '8 كم' },
     { id: 'p2', user: 'مروان م.', text: 'هرولة ممتعة مع الرفاق على ممشى الكورنيش. إيقاع خطوة متزن ودرجات حرارة رائعة.', time: 'منذ ساعة', distance: '12 كم' },
@@ -51,6 +61,21 @@ export default function CommunitiesView({
     setNewPostText('');
     setShowUploadModal(false);
   };
+
+  const handleSubmitEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCommunityId || !newEvent.title.trim() || !newEvent.date.trim()) return;
+    onCreateEvent(selectedCommunityId, {
+      title: newEvent.title,
+      date: newEvent.date,
+      distance: newEvent.distance || '—',
+      location: newEvent.location || '—'
+    });
+    setNewEvent({ title: '', date: '', distance: '', location: '' });
+    setShowEventModal(false);
+  };
+
+  const communityEvents = events.filter(ev => ev.communityId === selectedCommunityId);
 
   return (
     <div className="space-y-8 animate-fadeIn text-right" dir="rtl">
@@ -180,24 +205,48 @@ export default function CommunitiesView({
                   </div>
 
                   <div className="border-t border-stone-100 pt-6">
-                    <h3 className="font-bold text-stone-900 text-sm tracking-widest uppercase mb-4">الجدول القادم لتجمعات الركض</h3>
-                    
-                    <div className="space-y-3">
-                      <div className="p-4 bg-stone-50 border border-stone-150 rounded-sm flex justify-between items-center">
-                        <div>
-                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الجمعة، 5:00 صباحاً</span>
-                          <h4 className="font-semibold text-stone-900 text-xs">الجري الطويل الأسبوعي (Long Run) @ وادي حنيفة</h4>
-                        </div>
-                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">15 كم</span>
-                      </div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-bold text-stone-900 text-sm tracking-widest uppercase">الفعاليات والتجمعات القادمة</h3>
+                      <button
+                        onClick={() => setShowEventModal(true)}
+                        className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-950 transition-all"
+                      >
+                        <Plus className="w-4 h-4" /> أنشئ فعالية
+                      </button>
+                    </div>
 
-                      <div className="p-4 bg-stone-50 border border-stone-150 rounded-sm flex justify-between items-center">
-                        <div>
-                          <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">الأحد، 7:00 مساءً</span>
-                          <h4 className="font-semibold text-stone-900 text-xs">ركض هرولة خفيفة (Easy Aerobic Pace) @ ممشى السفارات</h4>
-                        </div>
-                        <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm">7 كم</span>
-                      </div>
+                    <div className="space-y-3">
+                      {communityEvents.length === 0 && (
+                        <p className="text-xs text-stone-400 py-4 text-center">لا توجد فعاليات قادمة بعد — كن أول من ينشئ تجمعاً.</p>
+                      )}
+                      {communityEvents.map((ev) => {
+                        const joined = ev.attendees.includes(currentUserName);
+                        return (
+                          <div key={ev.id} className="p-4 bg-stone-50 border border-stone-150 rounded-sm space-y-3">
+                            <div className="flex justify-between items-start gap-2">
+                              <div>
+                                <span className="text-[10px] font-bold text-emerald-800 uppercase block mb-1">{ev.date}</span>
+                                <h4 className="font-semibold text-stone-900 text-xs">{ev.title} @ {ev.location}</h4>
+                                <span className="text-[10px] text-stone-400 mt-1 block">أنشأها: {ev.createdBy}</span>
+                              </div>
+                              <span className="text-xs font-mono text-stone-500 font-bold bg-stone-100 px-2 py-1 rounded-sm shrink-0">{ev.distance}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-stone-500">{ev.attendees.length} منضم</span>
+                              <button
+                                onClick={() => onJoinEvent(ev.id)}
+                                className={`text-[10px] font-bold px-3 py-1.5 rounded-sm transition-colors ${
+                                  joined
+                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                    : 'bg-emerald-950 text-white hover:bg-emerald-900'
+                                }`}
+                              >
+                                {joined ? 'أنت منضم ✓' : 'انضمام'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -247,7 +296,26 @@ export default function CommunitiesView({
                     <p className="text-xs text-stone-600 font-medium">{selectedCommunity.location}</p>
                   </div>
 
-                  <button 
+                  {selectedCommunity.memberList && selectedCommunity.memberList.length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold text-stone-400 block uppercase mb-2">أعضاء بارزون</span>
+                      <div className="space-y-2">
+                        {selectedCommunity.memberList.slice(0, 5).map((member, i) => (
+                          <div key={i} className="flex items-center gap-2.5">
+                            <SketchAvatar name={member.name} avatarUrl={member.avatar} className="w-7 h-7" />
+                            <span className="text-xs text-stone-700 font-medium">{member.name}</span>
+                          </div>
+                        ))}
+                        {selectedCommunity.members > selectedCommunity.memberList.length && (
+                          <p className="text-[10px] text-stone-400 pt-1">
+                            و{selectedCommunity.members - selectedCommunity.memberList.length}+ عدّاء آخر
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <button
                     onClick={() => handleToggleJoin(selectedCommunity)}
                     className={`w-full text-center text-xs font-bold py-3 uppercase tracking-widest rounded-sm transition-colors ${
                       selectedCommunity.joined 
@@ -306,11 +374,84 @@ export default function CommunitiesView({
                 />
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="w-full bg-emerald-950 hover:bg-emerald-900 text-white text-xs font-bold py-3 uppercase tracking-widest rounded-sm transition-colors mt-4 shadow-sm"
               >
                 نشر على حائط التمرين الآن
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Event Modal */}
+      {showEventModal && (
+        <div className="fixed inset-0 bg-stone-950/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-stone-200 shadow-2xl max-w-md w-full p-8 rounded-sm space-y-6 relative text-right">
+            <button
+              onClick={() => setShowEventModal(false)}
+              className="absolute left-6 top-6 p-1.5 hover:bg-stone-100 text-stone-400 hover:text-stone-700 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div>
+              <h3 className="text-xl font-bold text-stone-900 font-display">إنشاء فعالية/تجمّع جري</h3>
+              <p className="text-stone-400 text-xs mt-1">أنشئ تمريناً جماعياً قادماً ليتمكن أعضاء النادي من الانضمام إليك.</p>
+            </div>
+
+            <form onSubmit={handleSubmitEvent} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-stone-500 uppercase">عنوان الفعالية</label>
+                <input
+                  type="text"
+                  required
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="مثال: جري طويل جماعي"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-sm px-4 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-800"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-stone-500 uppercase">التوقيت</label>
+                <input
+                  type="text"
+                  required
+                  value={newEvent.date}
+                  onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                  placeholder="مثال: الجمعة، 5:00 صباحاً"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-sm px-4 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-800"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-stone-500 uppercase">المسافة</label>
+                  <input
+                    type="text"
+                    value={newEvent.distance}
+                    onChange={(e) => setNewEvent({ ...newEvent, distance: e.target.value })}
+                    placeholder="10 كم"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-sm px-4 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-800"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-stone-500 uppercase">المكان</label>
+                  <input
+                    type="text"
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                    placeholder="وادي حنيفة"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-sm px-4 py-2.5 text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-800"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-emerald-950 hover:bg-emerald-900 text-white text-xs font-bold py-3 uppercase tracking-widest rounded-sm transition-colors mt-4 shadow-sm"
+              >
+                إنشاء الفعالية الآن
               </button>
             </form>
           </div>

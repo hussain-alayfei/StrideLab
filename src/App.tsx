@@ -19,7 +19,19 @@ import AthleteView from './components/AthleteView';
 import CoachView from './components/CoachView';
 import CommunitiesView from './components/CommunitiesView';
 import { SketchAvatar } from './components/SketchAvatar';
-import { Role, PlayerStatus, Workout, Community, Coach, ChatMessage } from './types';
+import { Role, PlayerStatus, Workout, Community, Coach, ChatMessage, CommunityEvent, SportOption } from './types';
+
+// Supported sports. Running is active; the rest are architecturally ready
+// but hidden ("قريباً") for a future rollout.
+const AVAILABLE_SPORTS: SportOption[] = [
+  { id: 'running', label: 'الجري', enabled: true },
+  { id: 'cycling', label: 'الدراجات الهوائية', enabled: false },
+  { id: 'triathlon', label: 'الترايثلون', enabled: false },
+  { id: 'athletics', label: 'ألعاب القوى', enabled: false }
+];
+
+// Current logged-in athlete (demo). Used for event attendance + community posts.
+const CURRENT_USER_NAME = 'فهد آل سعود';
 
 // Coaches catalog list
 const coaches: Coach[] = [
@@ -27,31 +39,43 @@ const coaches: Coach[] = [
     id: '1',
     name: 'المدرب أحمد فؤاد',
     specialty: 'مسافات متوسطة وطويلة و5 كم/10 كم',
+    specializations: ['5 كم', '10 كم', 'مسافات متوسطة'],
     experience: 'خبرة 8 سنوات',
     athletesCount: 124,
     rating: 4.9,
     avatar: 'https://i.pravatar.cc/150?img=11',
-    bio: 'متخصص في تحسين ميكانيكية الركض والهندسة الحيوية للجسم. دربتُ أكثر من 120 عداءً محلياً لتحقيق أرقام شخصية جديدة بأمان وبدون إصابات.'
+    bio: 'متخصص في تحسين ميكانيكية الركض والهندسة الحيوية للجسم. دربتُ أكثر من 120 عداءً محلياً لتحقيق أرقام شخصية جديدة بأمان وبدون إصابات.',
+    sport: 'running',
+    region: 'الرياض',
+    pricePerMonth: 220
   },
   {
     id: '2',
     name: 'المدربة سارة منصور',
     specialty: 'الماراثون والجري الجبلي الطويل',
+    specializations: ['ماراثون', 'نصف ماراثون', 'الجري الجبلي (Trail)'],
     experience: 'خبرة 6 سنوات',
     athletesCount: 82,
     rating: 4.8,
     avatar: 'https://i.pravatar.cc/150?img=47',
-    bio: 'أركّز على بناء عتبة التحمل الهوائي (Zone 2) وإدارة تغذية الماراثونات. ساعدت العديد من العدائين لإنهاء الماراثونات الكاملة بنجاح.'
+    bio: 'أركّز على بناء عتبة التحمل الهوائي (Zone 2) وإدارة تغذية الماراثونات. ساعدت العديد من العدائين لإنهاء الماراثونات الكاملة بنجاح.',
+    sport: 'running',
+    region: 'جدة',
+    pricePerMonth: 260
   },
   {
     id: '3',
     name: 'المدرب خالد ناصر',
     specialty: 'جري السرعات (Sprint) وتطوير ركض المسافات',
+    specializations: ['سرعات (Sprint)', '5 كم', '10 كم'],
     experience: 'خبرة 10 سنوات',
     athletesCount: 156,
     rating: 5.0,
     avatar: 'https://i.pravatar.cc/150?img=15',
-    bio: 'مدرب معتمد للسرعات وتكنيكات الانطلاق القوي. خطط تدريبية ذكية مكثفة لكسر حاجز الـ 5 كم والـ 10 كم للمتسابقين والمحترفين.'
+    bio: 'مدرب معتمد للسرعات وتكنيكات الانطلاق القوي. خطط تدريبية ذكية مكثفة لكسر حاجز الـ 5 كم والـ 10 كم للمتسابقين والمحترفين.',
+    sport: 'running',
+    region: 'الدمام',
+    pricePerMonth: 300
   }
 ];
 
@@ -59,6 +83,7 @@ export default function App() {
   const [userSession, setUserSession] = useState<'welcome' | 'login_athlete' | 'login_coach' | 'dashboard'>('welcome');
   const [role, setRole] = useState<Role>('athlete');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'communities'>('dashboard');
+  const [selectedSport, setSelectedSport] = useState<SportOption['id']>('running');
   const [isOnboarded, setIsOnboarded] = useState<boolean>(true);
   const [onboardingStep, setOnboardingStep] = useState<number>(1);
   const [clickedGate, setClickedGate] = useState<'athlete' | 'coach' | null>(null);
@@ -188,7 +213,15 @@ export default function App() {
       members: 1240,
       nextRun: 'غداً، 5:00 ص @ وادي حنيفة',
       imageUrl: 'https://images.unsplash.com/photo-1552674605-15c2145eba11?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      joined: true
+      joined: true,
+      memberList: [
+        { name: 'أحمد فؤاد', avatar: 'https://i.pravatar.cc/150?img=11' },
+        { name: 'خالد ناصر', avatar: 'https://i.pravatar.cc/150?img=15' },
+        { name: 'سارة منصور', avatar: 'https://i.pravatar.cc/150?img=47' },
+        { name: 'مروان الحربي', avatar: 'https://i.pravatar.cc/150?img=33' },
+        { name: 'نورة العتيبي', avatar: 'https://i.pravatar.cc/150?img=45' },
+        { name: 'فيصل الدوسري', avatar: 'https://i.pravatar.cc/150?img=12' }
+      ]
     },
     {
       id: '2',
@@ -197,7 +230,13 @@ export default function App() {
       members: 890,
       nextRun: 'الجمعة، 6:00 ص @ كورنيش جدة',
       imageUrl: 'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      joined: false
+      joined: false,
+      memberList: [
+        { name: 'ريم السلمي', avatar: 'https://i.pravatar.cc/150?img=20' },
+        { name: 'عبدالله باعشن', avatar: 'https://i.pravatar.cc/150?img=52' },
+        { name: 'لمى القرشي', avatar: 'https://i.pravatar.cc/150?img=32' },
+        { name: 'ياسر الغامدي', avatar: 'https://i.pravatar.cc/150?img=8' }
+      ]
     },
     {
       id: '3',
@@ -206,8 +245,21 @@ export default function App() {
       members: 450,
       nextRun: 'السبت، 5:30 ص @ الواجهة البحرية',
       imageUrl: 'https://images.unsplash.com/photo-1502224562085-639556652f33?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      joined: false
+      joined: false,
+      memberList: [
+        { name: 'سلطان المطيري', avatar: 'https://i.pravatar.cc/150?img=3' },
+        { name: 'هند الشمري', avatar: 'https://i.pravatar.cc/150?img=41' },
+        { name: 'طلال العنزي', avatar: 'https://i.pravatar.cc/150?img=53' }
+      ]
     }
+  ]);
+
+  // Community-scheduled running events (create + join)
+  const [communityEvents, setCommunityEvents] = useState<CommunityEvent[]>([
+    { id: 'e1', communityId: '1', title: 'الجري الطويل الأسبوعي (Long Run)', date: 'الجمعة، 5:00 صباحاً', distance: '15 كم', location: 'وادي حنيفة', createdBy: 'أحمد فؤاد', attendees: ['أحمد فؤاد', 'خالد ناصر', 'مروان الحربي'] },
+    { id: 'e2', communityId: '1', title: 'ركض هرولة خفيفة (Easy Aerobic)', date: 'الأحد، 7:00 مساءً', distance: '7 كم', location: 'ممشى السفارات', createdBy: 'نورة العتيبي', attendees: ['نورة العتيبي', 'سارة منصور'] },
+    { id: 'e3', communityId: '2', title: 'ركض الكورنيش الجماعي', date: 'الجمعة، 6:00 صباحاً', distance: '10 كم', location: 'كورنيش جدة', createdBy: 'ريم السلمي', attendees: ['ريم السلمي', 'عبدالله باعشن'] },
+    { id: 'e4', communityId: '3', title: 'تجمع الواجهة البحرية', date: 'السبت، 5:30 صباحاً', distance: '8 كم', location: 'الواجهة البحرية', createdBy: 'سلطان المطيري', attendees: ['سلطان المطيري'] }
   ]);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -332,6 +384,12 @@ export default function App() {
     }));
   };
 
+  const handleAttachNutrition = (athleteId: string, meals: PlayerStatus['nutrition']) => {
+    setAthletes(prev => prev.map(ath => (
+      ath.id === athleteId ? { ...ath, nutrition: meals } : ath
+    )));
+  };
+
   const handleUpdateWorkout = (athleteId: string, workoutId: string, updatedFields: Partial<Workout>) => {
     setAthletes(prev => prev.map(ath => {
       if (ath.id === athleteId) {
@@ -358,6 +416,40 @@ export default function App() {
       if (c.id === id) return { ...c, joined: false, members: c.members - 1 };
       return c;
     }));
+  };
+
+  // Community events: create + join
+  const handleCreateEvent = (communityId: string, event: Omit<CommunityEvent, 'id' | 'communityId' | 'createdBy' | 'attendees'>) => {
+    setCommunityEvents(prev => [
+      {
+        ...event,
+        id: Math.random().toString(),
+        communityId,
+        createdBy: CURRENT_USER_NAME,
+        attendees: [CURRENT_USER_NAME]
+      },
+      ...prev
+    ]);
+  };
+
+  const handleJoinEvent = (eventId: string) => {
+    setCommunityEvents(prev => prev.map(ev => {
+      if (ev.id !== eventId) return ev;
+      const isIn = ev.attendees.includes(CURRENT_USER_NAME);
+      return {
+        ...ev,
+        attendees: isIn
+          ? ev.attendees.filter(a => a !== CURRENT_USER_NAME)
+          : [...ev.attendees, CURRENT_USER_NAME]
+      };
+    }));
+  };
+
+  // Athlete picks a coach from the directory
+  const handleSelectCoach = (coach: Coach) => {
+    setSelectedCoach(coach);
+    setHasApprovedPlan(true);
+    setAthleteActiveSubTab('dashboard');
   };
 
   const handleUnsubscribeCoach = () => {
@@ -446,10 +538,14 @@ export default function App() {
   const renderContent = () => {
     if (activeTab === 'communities') {
       return (
-        <CommunitiesView 
+        <CommunitiesView
           communities={communities}
           onJoinCommunity={handleJoinCommunity}
           onLeaveCommunity={handleLeaveCommunity}
+          events={communityEvents}
+          onCreateEvent={handleCreateEvent}
+          onJoinEvent={handleJoinEvent}
+          currentUserName={CURRENT_USER_NAME}
         />
       );
     }
@@ -457,7 +553,7 @@ export default function App() {
     if (role === 'athlete') {
       // If onboarded, render Athlete View
       return (
-        <AthleteView 
+        <AthleteView
           workouts={currentAthleteWorkouts}
           onCompleteWorkout={handleCompleteWorkout}
           selectedCoach={selectedCoach}
@@ -470,18 +566,22 @@ export default function App() {
           setActiveSubTab={setAthleteActiveSubTab}
           onResetData={handleResetData}
           onUnsubscribeCoach={handleUnsubscribeCoach}
+          coaches={coaches}
+          onSelectCoach={handleSelectCoach}
+          athleteProfile={athletes.find(a => a.id === '1')}
         />
       );
     } else {
       // Coach Dashboard C1 - C9
       return (
-        <CoachView 
+        <CoachView
           athletes={athletes}
           onAddAthlete={handleAddAthlete}
           onApprovePlan={handleApprovePlan}
           activeAlerts={activeAlerts}
           onResolveAlert={handleResolveAlert}
           onUpdateWorkout={handleUpdateWorkout}
+          onAttachNutrition={handleAttachNutrition}
         />
       );
     }
@@ -742,7 +842,29 @@ export default function App() {
 
         {/* Scrollable Content */}
         <section className="flex-1 p-4 md:p-10 overflow-y-auto">
-          <div className="max-w-6xl mx-auto w-full pb-20 md:pb-0">
+          <div className="max-w-6xl mx-auto w-full pb-20 md:pb-0 space-y-6">
+            {/* Sport selector — Running active, others coming soon */}
+            {activeTab === 'dashboard' && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {AVAILABLE_SPORTS.map((sport) => (
+                  <button
+                    key={sport.id}
+                    onClick={() => sport.enabled && setSelectedSport(sport.id)}
+                    disabled={!sport.enabled}
+                    className={`shrink-0 px-4 py-1.5 text-xs font-bold rounded-sm border transition-colors ${
+                      selectedSport === sport.id && sport.enabled
+                        ? 'bg-emerald-950 text-white border-emerald-950'
+                        : sport.enabled
+                          ? 'bg-white text-stone-600 border-stone-200 hover:border-stone-300'
+                          : 'bg-stone-50 text-stone-300 border-stone-150 cursor-not-allowed'
+                    }`}
+                  >
+                    {sport.label}
+                    {!sport.enabled && <span className="mr-1.5 text-[9px] text-stone-400">(قريباً)</span>}
+                  </button>
+                ))}
+              </div>
+            )}
             {renderContent()}
           </div>
         </section>

@@ -1,5 +1,15 @@
 export type Role = 'athlete' | 'coach';
 
+// Supported sports. Running is the primary/active sport; the rest are
+// architecturally supported but hidden ("coming soon") for now.
+export type Sport = 'running' | 'cycling' | 'triathlon' | 'athletics';
+
+export interface SportOption {
+  id: Sport;
+  label: string;
+  enabled: boolean;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -19,15 +29,25 @@ export interface Workout {
   approved?: boolean;
 }
 
+export interface NutritionMeal {
+  name: string;
+  description: string;
+  calories: string;
+}
+
 export interface Coach {
   id: string;
   name: string;
   specialty: string;
+  specializations: string[];
   experience: string;
   athletesCount: number;
   rating: number;
   avatar: string;
   bio: string;
+  sport: Sport;
+  region: string;
+  pricePerMonth: number;
 }
 
 export interface PlayerStatus {
@@ -42,6 +62,13 @@ export interface PlayerStatus {
   trainingLoad: number;
   goal: string;
   workouts: Workout[];
+  sport?: Sport;
+  nutrition?: NutritionMeal[];
+}
+
+export interface CommunityMember {
+  name: string;
+  avatar: string;
 }
 
 export interface Community {
@@ -52,6 +79,18 @@ export interface Community {
   nextRun: string;
   imageUrl: string;
   joined?: boolean;
+  memberList?: CommunityMember[];
+}
+
+export interface CommunityEvent {
+  id: string;
+  communityId: string;
+  title: string;
+  date: string;
+  distance: string;
+  location: string;
+  createdBy: string;
+  attendees: string[];
 }
 
 export interface ChatMessage {

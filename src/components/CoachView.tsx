@@ -16,7 +16,7 @@ import {
   Calendar,
   ShieldCheck
 } from 'lucide-react';
-import { PlayerStatus, Workout } from '../types';
+import { PlayerStatus, Workout, NutritionMeal } from '../types';
 
 interface CoachViewProps {
   athletes: PlayerStatus[];
@@ -25,6 +25,7 @@ interface CoachViewProps {
   activeAlerts: any[];
   onResolveAlert: (alertId: string, adjustedWorkout?: any) => void;
   onUpdateWorkout: (athleteId: string, workoutId: string, updatedFields: Partial<Workout>) => void;
+  onAttachNutrition: (athleteId: string, meals: NutritionMeal[]) => void;
 }
 
 export default function CoachView({
@@ -33,7 +34,8 @@ export default function CoachView({
   onApprovePlan,
   activeAlerts,
   onResolveAlert,
-  onUpdateWorkout
+  onUpdateWorkout,
+  onAttachNutrition
 }: CoachViewProps) {
   
   const [activeSubView, setActiveSubView] = useState<'dashboard' | 'athlete_detail' | 'review_plan' | 'all_athletes'>('dashboard');
@@ -59,6 +61,30 @@ export default function CoachView({
   });
   const [loadingAlerts, setLoadingAlerts] = useState<Record<string, boolean>>({});
   const [activeEditIndex, setActiveEditIndex] = useState<number | null>(0);
+  const [draftNutrition, setDraftNutrition] = useState<NutritionMeal[]>([]);
+  const [isGeneratingNutrition, setIsGeneratingNutrition] = useState<boolean>(false);
+
+  // Generate an optional (premium) nutrition plan to attach to the training plan
+  const handleGenerateNutrition = async () => {
+    setIsGeneratingNutrition(true);
+    try {
+      const parsedWeeklyKm = parseFloat(selectedAthlete.weeklyDistance.replace(/[^\d.]/g, '')) || 25;
+      const response = await fetch('/api/ai/generate-nutrition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ athleteGoal: selectedAthlete.goal, weeklyKm: parsedWeeklyKm })
+      });
+      const data = await response.json();
+      if (data.meals && data.meals.length > 0) {
+        setDraftNutrition(data.meals);
+        setToastMessage('تم توليد خطة تغذية مرافقة. ستُرفق عند اعتماد الخطة.');
+      }
+    } catch (error) {
+      console.error('Error generating nutrition plan:', error);
+    } finally {
+      setIsGeneratingNutrition(false);
+    }
+  };
 
   // Real-time plan safety checks
   const runSafetyCheck = (workoutsList: Workout[], athlete: PlayerStatus) => {
@@ -202,6 +228,7 @@ export default function CoachView({
     setDraftWorkouts([...athlete.workouts]);
     setSelectedAthleteId(athlete.id);
     setCurrentPlanMonth(1);
+    setDraftNutrition(athlete.nutrition || []);
     setActiveSubView('review_plan');
     runSafetyCheck([...athlete.workouts], athlete);
   };
@@ -215,6 +242,9 @@ export default function CoachView({
 
   const submitApprovedPlan = () => {
     onApprovePlan(selectedAthlete.id, draftWorkouts);
+    if (draftNutrition.length > 0) {
+      onAttachNutrition(selectedAthlete.id, draftNutrition);
+    }
     setActiveSubView('dashboard');
     setToastMessage(`✓ تم تفعيل واعتماد خطتك المخصصة لـ ${selectedAthlete.name}!`);
   };
@@ -874,6 +904,39 @@ export default function CoachView({
                       الخطة الحالية مطابقة لتوصيات أمان الحمل والزيادة التدريجية الآمنة (أقل من 10٪).
                     </p>
                   )}
+                </div>
+
+                {/* Nutrition add-on (Premium) */}
+                <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-stone-900">خطة التغذية المرافقة</h4>
+                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-sm">Premium</span>
+                  </div>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    أرفق خطة تغذية مخصصة مع الخطة التدريبية (ميزة اشتراك مميّزة).
+                  </p>
+
+                  {draftNutrition.length > 0 && (
+                    <div className="space-y-2">
+                      {draftNutrition.map((meal, i) => (
+                        <div key={i} className="bg-stone-50 border border-stone-150 rounded-sm p-2.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-stone-800">{meal.name}</span>
+                            <span className="text-[10px] text-emerald-800 font-mono">{meal.calories}</span>
+                          </div>
+                          <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{meal.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleGenerateNutrition}
+                    disabled={isGeneratingNutrition}
+                    className="w-full py-2.5 text-xs font-bold rounded-sm border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
+                  >
+                    {isGeneratingNutrition ? 'جاري التوليد...' : draftNutrition.length > 0 ? 'إعادة توليد خطة التغذية' : 'توليد خطة تغذية'}
+                  </button>
                 </div>
 
                 {/* Athlete Context info */}

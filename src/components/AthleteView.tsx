@@ -20,7 +20,26 @@ import {
   TrendingUp,
   RotateCcw
 } from 'lucide-react';
-import { Workout, Coach, ChatMessage } from '../types';
+import { Workout, Coach, ChatMessage, PlayerStatus } from '../types';
+import CoachDirectory from './CoachDirectory';
+
+// Subscription tiers (UI only — no payment integration yet)
+const SUBSCRIPTION_PLANS = [
+  {
+    id: 'athlete',
+    name: 'باقة العدّاء',
+    price: '39 ر.س/شهر',
+    current: true,
+    features: ['خطة تدريبية مخصصة من مدربك', 'تحليل الجري بالفيديو (AI)', 'محادثة المدرب والمتابعة الحيوية']
+  },
+  {
+    id: 'athlete_plus',
+    name: 'باقة العدّاء Plus',
+    price: '69 ر.س/شهر',
+    current: false,
+    features: ['كل مزايا باقة العدّاء', 'خطة تغذية مرافقة (Premium)', 'أولوية في اختيار المدربين']
+  }
+];
 
 interface AthleteViewProps {
   workouts: Workout[];
@@ -35,6 +54,9 @@ interface AthleteViewProps {
   setActiveSubTab: (tab: string) => void;
   onResetData: () => void;
   onUnsubscribeCoach?: () => void;
+  coaches: Coach[];
+  onSelectCoach: (coach: Coach) => void;
+  athleteProfile?: PlayerStatus;
 }
 
 export default function AthleteView({
@@ -49,7 +71,10 @@ export default function AthleteView({
   activeSubTab,
   setActiveSubTab,
   onResetData,
-  onUnsubscribeCoach
+  onUnsubscribeCoach,
+  coaches,
+  onSelectCoach,
+  athleteProfile
 }: AthleteViewProps) {
   
   const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
@@ -182,6 +207,7 @@ export default function AthleteView({
         {[
           { id: 'dashboard', label: 'الرئيسية' },
           { id: 'schedule', label: 'خطتي الكاملة' },
+          { id: 'coaches', label: 'المدربون' },
           { id: 'analysis', label: 'تحليل الجري (AI)' },
           { id: 'chat', label: 'محادثة المدرب' },
           { id: 'profile', label: 'ملفي الرياضي' }
@@ -530,6 +556,44 @@ export default function AthleteView({
                 ))}
               </div>
             </div>
+
+            {/* Nutrition plan (Premium add-on) */}
+            {athleteProfile?.nutrition && athleteProfile.nutrition.length > 0 && (
+              <div className="bg-white border border-stone-200 shadow-sm rounded-sm overflow-hidden">
+                <div className="p-6 bg-stone-50 border-b border-stone-200 flex justify-between items-center">
+                  <h3 className="font-bold text-stone-900 text-sm">خطة التغذية المرافقة</h3>
+                  <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-sm">Premium</span>
+                </div>
+                <div className="divide-y divide-stone-100">
+                  {athleteProfile.nutrition.map((meal, i) => (
+                    <div key={i} className="p-5 flex justify-between items-start gap-4">
+                      <div>
+                        <h4 className="font-semibold text-stone-900 text-sm">{meal.name}</h4>
+                        <p className="text-xs text-stone-500 mt-1 leading-relaxed">{meal.description}</p>
+                      </div>
+                      <span className="text-xs font-mono text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-sm shrink-0">{meal.calories}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* --- COACH DIRECTORY SUBTAB --- */}
+        {activeSubTab === 'coaches' && !selectedWorkout && (
+          <motion.div
+            key="coaches"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <CoachDirectory
+              coaches={coaches}
+              selectedCoach={selectedCoach}
+              onSelectCoach={onSelectCoach}
+              athleteGoal={athleteProfile?.goal}
+            />
           </motion.div>
         )}
 
@@ -923,6 +987,49 @@ export default function AthleteView({
                 </div>
               </div>
 
+            </div>
+
+            {/* Subscription / Pricing */}
+            <div className="bg-white border border-stone-200 shadow-sm rounded-sm p-8 space-y-5">
+              <div>
+                <h3 className="font-bold text-stone-900 text-sm">الاشتراك والباقة</h3>
+                <p className="text-stone-400 text-xs mt-1">اختر الباقة المناسبة لك. باقة Plus تفتح خطة التغذية المرافقة.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {SUBSCRIPTION_PLANS.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`p-5 rounded-sm border ${plan.current ? 'border-emerald-600 ring-1 ring-emerald-600/20' : 'border-stone-200'}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-stone-900 text-sm">{plan.name}</h4>
+                      {plan.current && <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-sm">باقتك الحالية</span>}
+                    </div>
+                    <p className="text-2xl font-bold text-stone-900 mb-3">{plan.price}</p>
+                    <ul className="space-y-1.5 mb-4">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="text-[11px] text-stone-600 flex items-start gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      disabled={plan.current}
+                      className={`w-full py-2.5 text-xs font-bold rounded-sm transition-colors ${
+                        plan.current
+                          ? 'bg-stone-100 text-stone-400 cursor-default'
+                          : 'bg-emerald-950 text-white hover:bg-emerald-900'
+                      }`}
+                    >
+                      {plan.current ? 'مفعّلة' : 'الترقية للباقة'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-stone-400 text-center">
+                للمدربين: باقة أدوات المدرب متاحة بسعر مخفّض تشمل مساعد الذكاء الاصطناعي لبناء الخطط.
+              </p>
             </div>
           </motion.div>
         )}
