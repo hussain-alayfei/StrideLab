@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Users, Calendar, ArrowRight, Plus } from 'lucide-react';
+import { MapPin, Users, Calendar, ArrowRight, Plus, Search } from 'lucide-react';
 import { Community, CommunityEvent } from '../types';
 import { SketchAvatar, CommunitySketch } from './SketchAvatar';
 
@@ -25,6 +25,7 @@ export default function CommunitiesView({
 }: CommunitiesViewProps) {
 
   const [selectedCommunityId, setSelectedCommunityId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: '', date: '', distance: '', location: '' });
@@ -77,6 +78,15 @@ export default function CommunitiesView({
 
   const communityEvents = events.filter(ev => ev.communityId === selectedCommunityId);
 
+  const filteredCommunities = useMemo(() => (
+    communities.filter(c =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.location.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  ), [communities, searchQuery]);
+
+  const joinedCount = communities.filter(c => c.joined).length;
+
   return (
     <div className="space-y-8 animate-fadeIn text-right" dir="rtl">
       
@@ -91,78 +101,94 @@ export default function CommunitiesView({
             exit={{ opacity: 0, y: -10 }}
             className="space-y-8"
           >
-            <div>
-              <h1 className="text-4xl font-bold text-stone-950 tracking-tight mb-2 font-display">المجتمعات ونوادي الجري</h1>
-              <p className="text-stone-500 text-sm font-sans">ابحث وانضم إلى مجموعات الجري المحلية لتتدرب في بيئة جماعية محفزة وتشارك مساراتك اليومية.</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-stone-950 tracking-tight mb-2 font-display">المجتمعات ونوادي الجري</h1>
+                <p className="text-stone-500 text-sm font-sans">
+                  {communities.length} أندية متاحة{joinedCount > 0 && <> — أنت عضو في {joinedCount}</>}. ابحث وانضم لتتدرب في بيئة جماعية محفزة.
+                </p>
+              </div>
+
+              <div className="relative w-full md:w-72 bg-white border border-stone-200 rounded-sm flex items-center shrink-0">
+                <Search className="w-4 h-4 text-stone-400 mr-3 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="ابحث بالاسم أو المدينة..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none text-xs outline-none px-2 py-2.5 text-stone-800 placeholder-stone-400"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {communities.map((community) => (
-                <div 
-                  key={community.id} 
-                  className="bg-white border border-stone-200 shadow-sm rounded-sm hover:shadow-xl hover:border-emerald-900/15 transition-all duration-300 cursor-pointer group flex flex-col justify-between overflow-hidden"
-                >
-                  <div 
-                    onClick={() => setSelectedCommunityId(community.id)}
-                    className="h-48 relative overflow-hidden bg-stone-100 border-b border-stone-150"
+            {filteredCommunities.length === 0 ? (
+              <div className="bg-white p-12 border border-stone-200 text-center text-stone-500 text-xs rounded-sm">
+                لا يوجد نادٍ مطابق لبحثك حالياً.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredCommunities.map((community) => (
+                  <div
+                    key={community.id}
+                    className="bg-white border border-stone-200 rounded-sm hover:border-stone-300 hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col justify-between overflow-hidden"
                   >
-                    <div className="w-full h-full relative overflow-hidden transition-transform duration-500 group-hover:scale-105">
-                      <div className="absolute inset-0 bg-emerald-900/[0.04] group-hover:bg-transparent transition-colors z-10" />
+                    <div
+                      onClick={() => setSelectedCommunityId(community.id)}
+                      className="h-40 relative overflow-hidden"
+                    >
                       <CommunitySketch name={community.name} className="w-full h-full" />
+                      {community.joined && (
+                        <span className="absolute top-3 right-3 text-[9px] bg-white/90 text-emerald-800 font-bold px-2 py-1 rounded-sm shadow-sm">
+                          عضو نشط ✓
+                        </span>
+                      )}
                     </div>
-                  </div>
 
-                  <div className="p-6 flex flex-col flex-1">
-                    <div onClick={() => setSelectedCommunityId(community.id)} className="space-y-4">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-bold text-lg text-stone-900 leading-snug group-hover:text-emerald-950 transition-colors font-display">
+                    <div className="p-5 flex flex-col flex-1">
+                      <div onClick={() => setSelectedCommunityId(community.id)} className="space-y-3 flex-1">
+                        <h3 className="font-bold text-base text-stone-900 leading-snug group-hover:text-emerald-950 transition-colors font-display">
                           {community.name}
                         </h3>
-                        {community.joined && (
-                          <span className="text-[9px] bg-emerald-50 text-emerald-800 font-bold px-2 py-0.5 rounded-sm border border-emerald-200/50 shrink-0">
-                            عضو نشط ✓
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="space-y-2.5 mb-6">
-                        <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <MapPin className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
-                          <span>{community.location}</span>
-                        </p>
-                        <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <Users className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
-                          <span>{community.members} عدّاء مشارك</span>
-                        </p>
-                        <p className="text-xs text-stone-500 flex items-center gap-3 font-medium">
-                          <Calendar className="w-4 h-4 text-emerald-700/80 shrink-0" /> 
-                          <span className="truncate">{community.nextRun}</span>
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex gap-2 mt-4 pt-2 border-t border-stone-100">
-                      <button 
-                        onClick={() => setSelectedCommunityId(community.id)}
-                        className="flex-1 bg-stone-50 text-stone-800 border border-stone-200 text-xs font-bold py-2.5 rounded-sm hover:bg-stone-100 transition-colors"
-                      >
-                        تفاصيل الجدول
-                      </button>
-                      <button 
-                        onClick={() => handleToggleJoin(community)}
-                        className={`px-4 py-2.5 text-xs font-bold uppercase rounded-sm transition-all ${
-                          community.joined 
-                            ? 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/50' 
-                            : 'bg-emerald-950 text-white hover:bg-emerald-850 shadow-sm'
-                        }`}
-                      >
-                        {community.joined ? 'مغادرة' : 'انضمام'}
-                      </button>
+                        <div className="space-y-2">
+                          <p className="text-xs text-stone-500 flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                            <span>{community.location}</span>
+                          </p>
+                          <p className="text-xs text-stone-500 flex items-center gap-2">
+                            <Users className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                            <span>{community.members} عدّاء مشارك</span>
+                          </p>
+                          <p className="text-xs text-stone-500 flex items-center gap-2">
+                            <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                            <span className="truncate">{community.nextRun}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-4 pt-3 border-t border-stone-100">
+                        <button
+                          onClick={() => setSelectedCommunityId(community.id)}
+                          className="flex-1 bg-stone-50 text-stone-800 border border-stone-200 text-xs font-bold py-2.5 rounded-sm hover:bg-stone-100 transition-colors"
+                        >
+                          تفاصيل الجدول
+                        </button>
+                        <button
+                          onClick={() => handleToggleJoin(community)}
+                          className={`px-4 py-2.5 text-xs font-bold rounded-sm transition-colors ${
+                            community.joined
+                              ? 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/50'
+                              : 'bg-emerald-950 text-white hover:bg-emerald-900'
+                          }`}
+                        >
+                          {community.joined ? 'مغادرة' : 'انضمام'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
 
