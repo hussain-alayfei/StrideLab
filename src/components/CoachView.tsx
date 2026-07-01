@@ -14,7 +14,11 @@ import {
   X,
   Sparkles,
   Calendar,
-  ShieldCheck
+  ShieldCheck,
+  Pencil,
+  ChevronDown,
+  RefreshCw,
+  Zap
 } from 'lucide-react';
 import { PlayerStatus, Workout, NutritionMeal } from '../types';
 
@@ -63,6 +67,8 @@ export default function CoachView({
   const [activeEditIndex, setActiveEditIndex] = useState<number | null>(0);
   const [draftNutrition, setDraftNutrition] = useState<NutritionMeal[]>([]);
   const [isGeneratingNutrition, setIsGeneratingNutrition] = useState<boolean>(false);
+  const [nutritionExpanded, setNutritionExpanded] = useState<boolean>(false);
+  const [sidebarTab, setSidebarTab] = useState<'assistant' | 'nutrition'>('assistant');
 
   // Generate an optional (premium) nutrition plan to attach to the training plan
   const handleGenerateNutrition = async () => {
@@ -77,6 +83,7 @@ export default function CoachView({
       const data = await response.json();
       if (data.meals && data.meals.length > 0) {
         setDraftNutrition(data.meals);
+        setNutritionExpanded(true);
         setToastMessage('تم توليد خطة تغذية مرافقة. ستُرفق عند اعتماد الخطة.');
       }
     } catch (error) {
@@ -229,6 +236,8 @@ export default function CoachView({
     setSelectedAthleteId(athlete.id);
     setCurrentPlanMonth(1);
     setDraftNutrition(athlete.nutrition || []);
+    setNutritionExpanded(false);
+    setSidebarTab('assistant');
     setActiveSubView('review_plan');
     runSafetyCheck([...athlete.workouts], athlete);
   };
@@ -720,9 +729,9 @@ export default function CoachView({
                           }}
                         >
                           {/* Header Summary */}
-                          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-stone-100/80">
-                            <div className="flex items-center gap-2">
-                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold font-mono transition-colors ${
+                          <div className="flex items-center justify-between gap-3 pb-2 border-b border-stone-100/80">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold font-mono transition-colors shrink-0 ${
                                 isEditing ? 'bg-emerald-950 text-white' : 'bg-stone-100 text-stone-600'
                               }`}>
                                 {index + 1}
@@ -737,24 +746,31 @@ export default function CoachView({
                               }`}>
                                 {workout.type}
                               </span>
+                              <span className="text-stone-400 font-mono text-[11px] hidden sm:inline">{workout.distance} • {workout.duration}</span>
                             </div>
-                            
-                            <div className="flex items-center gap-2 text-stone-500 font-mono text-[11px]">
-                              <span>{workout.distance}</span>
-                              <span>•</span>
-                              <span>{workout.duration}</span>
-                              {!isEditing && (
-                                <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-sm mr-2 hover:bg-emerald-100 transition-colors">
-                                  تعديل التفاصيل ✎
-                                </span>
-                              )}
-                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveEditIndex(isEditing ? null : index);
+                              }}
+                              className={`w-7 h-7 shrink-0 rounded-sm flex items-center justify-center transition-colors ${
+                                isEditing
+                                  ? 'bg-emerald-950 text-white hover:bg-emerald-900'
+                                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                              }`}
+                              aria-label={isEditing ? 'إغلاق التعديل' : 'تعديل التمرين'}
+                            >
+                              {isEditing ? <ChevronDown className="w-4 h-4" /> : <Pencil className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
 
                           {!isEditing ? (
                             <div className="mt-2 space-y-1">
                               <h4 className="font-semibold text-stone-900 text-xs">{workout.title}</h4>
                               <p className="text-[10px] text-stone-400 font-light truncate">{workout.description}</p>
+                              <p className="text-[10px] text-stone-400 font-mono sm:hidden">{workout.distance} • {workout.duration}</p>
                             </div>
                           ) : (
                             <div className="space-y-4 pt-3" onClick={(e) => e.stopPropagation()}>
@@ -840,38 +856,10 @@ export default function CoachView({
 
               </div>
 
-              {/* Sidebar Column (Plan Assistant & Live Analysis) - Col span 1 */}
+              {/* Sidebar Column (AI Assistant / Nutrition tabs + Safety + Summary) - Col span 1 */}
               <div className="space-y-4 order-1 lg:order-2 lg:sticky lg:top-4">
 
-                {/* Plan generation panel */}
-                <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-3">
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900">مساعد بناء الخطة</h3>
-                    <p className="text-stone-500 text-xs mt-1">
-                      توليد أو تمديد خطة {selectedAthlete.name} تلقائياً — الشهر {currentPlanMonth}.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <button
-                      disabled={isGeneratingPlan}
-                      onClick={handleGenerateAiPlan}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-950 text-white hover:bg-emerald-900 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
-                    >
-                      {isGeneratingPlan ? "جاري التوليد..." : "إعادة توليد الخطة"}
-                    </button>
-
-                    <button
-                      disabled={isGeneratingPlan}
-                      onClick={handleExtendAiPlan}
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
-                    >
-                      {isGeneratingPlan ? "جاري التمديد..." : "تمديد للشهر التالي (≤ 10٪)"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Safety Diagnostics Panel */}
+                {/* Safety Diagnostics Panel — always visible, critical info */}
                 <div className={`p-5 border rounded-sm space-y-2 ${
                   safetyStatus.warnings.length > 0
                     ? 'bg-red-50 border-red-200'
@@ -906,40 +894,125 @@ export default function CoachView({
                   )}
                 </div>
 
-                {/* Nutrition add-on (Premium) */}
-                <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-stone-900">خطة التغذية المرافقة</h4>
-                    <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-sm">Premium</span>
-                  </div>
-                  <p className="text-xs text-stone-500 leading-relaxed">
-                    أرفق خطة تغذية مخصصة مع الخطة التدريبية (ميزة اشتراك مميّزة).
-                  </p>
-
-                  {draftNutrition.length > 0 && (
-                    <div className="space-y-2">
-                      {draftNutrition.map((meal, i) => (
-                        <div key={i} className="bg-stone-50 border border-stone-150 rounded-sm p-2.5">
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs font-bold text-stone-800">{meal.name}</span>
-                            <span className="text-[10px] text-emerald-800 font-mono">{meal.calories}</span>
-                          </div>
-                          <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{meal.description}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
+                {/* Tab switcher: AI Assistant vs Nutrition — same pill pattern used at the top of the page */}
+                <div className="bg-stone-100 p-1 rounded-sm flex gap-1 border border-stone-200">
                   <button
-                    onClick={handleGenerateNutrition}
-                    disabled={isGeneratingNutrition}
-                    className="w-full py-2.5 text-xs font-bold rounded-sm border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
+                    onClick={() => setSidebarTab('assistant')}
+                    className={`flex-1 py-2 text-[11px] font-bold transition-all text-center rounded-sm flex items-center justify-center gap-1.5 ${
+                      sidebarTab === 'assistant' ? 'bg-emerald-950 text-white shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                    }`}
                   >
-                    {isGeneratingNutrition ? 'جاري التوليد...' : draftNutrition.length > 0 ? 'إعادة توليد خطة التغذية' : 'توليد خطة تغذية'}
+                    <Sparkles className="w-3.5 h-3.5" /> المساعد الذكي
+                  </button>
+                  <button
+                    onClick={() => setSidebarTab('nutrition')}
+                    className={`flex-1 py-2 text-[11px] font-bold transition-all text-center rounded-sm flex items-center justify-center gap-1.5 ${
+                      sidebarTab === 'nutrition' ? 'bg-emerald-950 text-white shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    التغذية
+                    {draftNutrition.length > 0 && (
+                      <span className={`w-1.5 h-1.5 rounded-full ${sidebarTab === 'nutrition' ? 'bg-emerald-400' : 'bg-emerald-600'}`} />
+                    )}
                   </button>
                 </div>
 
-                {/* Athlete Context info */}
+                {sidebarTab === 'assistant' && (
+                  <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-4">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
+                      <h3 className="text-sm font-bold text-stone-900">مساعد بناء الخطة بالذكاء الاصطناعي</h3>
+                    </div>
+                    <p className="text-stone-500 text-xs leading-relaxed">
+                      الشهر التدريبي الحالي: <span className="font-bold text-stone-800">{currentPlanMonth}</span> — اختر أحد الإجراءين أدناه، ثم راجع النتيجة في القائمة قبل الاعتماد.
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="p-3 bg-stone-50 border border-stone-150 rounded-sm space-y-2">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                          <Zap className="w-3.5 h-3.5 text-emerald-700" /> توليد خطة جديدة
+                        </div>
+                        <p className="text-[11px] text-stone-500 leading-relaxed">
+                          يبني الذكاء الاصطناعي خطة كاملة من الصفر بناءً على هدف {selectedAthlete.name} وحمله الأسبوعي الحالي.
+                        </p>
+                        <button
+                          disabled={isGeneratingPlan}
+                          onClick={handleGenerateAiPlan}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-950 text-white hover:bg-emerald-900 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
+                        >
+                          {isGeneratingPlan ? 'جاري التوليد...' : 'توليد خطة جديدة'}
+                        </button>
+                      </div>
+
+                      <div className="p-3 bg-stone-50 border border-stone-150 rounded-sm space-y-2">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                          <RefreshCw className="w-3.5 h-3.5 text-emerald-700" /> تمديد للشهر التالي
+                        </div>
+                        <p className="text-[11px] text-stone-500 leading-relaxed">
+                          يتعلّم الذكاء الاصطناعي أسلوبك من الخطة الحالية ويكملها بنفس نمطك مع زيادة حمل آمنة (≤ 10٪).
+                        </p>
+                        <button
+                          disabled={isGeneratingPlan}
+                          onClick={handleExtendAiPlan}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 text-xs font-bold rounded-sm transition-colors"
+                        >
+                          {isGeneratingPlan ? 'جاري التمديد...' : `تمديد للشهر ${currentPlanMonth + 1}`}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {sidebarTab === 'nutrition' && (
+                  <div className="bg-white border border-stone-200 rounded-sm p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
+                        <h4 className="text-sm font-bold text-stone-900">خطة التغذية المرافقة</h4>
+                      </div>
+                      <span className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-sm">Premium</span>
+                    </div>
+                    <p className="text-xs text-stone-500 leading-relaxed">
+                      يولّد الذكاء الاصطناعي وجبات مرافقة للخطة بناءً على هدف اللاعب وحمله الأسبوعي (ميزة اشتراك مميّزة).
+                    </p>
+
+                    {draftNutrition.length > 0 && (
+                      <div className="border border-stone-150 rounded-sm overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setNutritionExpanded(prev => !prev)}
+                          className="w-full flex items-center justify-between p-2.5 bg-stone-50 hover:bg-stone-100 transition-colors"
+                        >
+                          <span className="text-xs font-bold text-stone-700">{draftNutrition.length} وجبات مولّدة</span>
+                          <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${nutritionExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                        {nutritionExpanded && (
+                          <div className="p-2.5 space-y-2 border-t border-stone-150">
+                            {draftNutrition.map((meal, i) => (
+                              <div key={i} className="bg-stone-50 border border-stone-150 rounded-sm p-2.5">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs font-bold text-stone-800">{meal.name}</span>
+                                  <span className="text-[10px] text-emerald-800 font-mono">{meal.calories}</span>
+                                </div>
+                                <p className="text-[11px] text-stone-500 mt-1 leading-relaxed">{meal.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleGenerateNutrition}
+                      disabled={isGeneratingNutrition}
+                      className="w-full py-2.5 text-xs font-bold rounded-sm border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-50 transition-colors"
+                    >
+                      {isGeneratingNutrition ? 'جاري التوليد...' : draftNutrition.length > 0 ? 'إعادة توليد خطة التغذية' : 'توليد خطة تغذية'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Athlete Context info — always visible */}
                 <div className="bg-white border border-stone-200 rounded-sm p-4 text-xs space-y-2.5">
                   <span className="text-stone-400 font-medium block pb-1 border-b border-stone-100">
                     ملخص {selectedAthlete.name}
